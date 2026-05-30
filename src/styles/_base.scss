@@ -1,0 +1,39 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color: var(--text);
+  background: #fff;
+  font-family: var(--font-ui);
+  font-size: var(--font-md);
+  line-height: 1.35;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: #315fd1;
+  text-underline-offset: 0.18em;
+}
+
+code,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#root {
+  min-height: 100vh;
+}

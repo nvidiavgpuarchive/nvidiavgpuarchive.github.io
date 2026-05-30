@@ -1,0 +1,128 @@
+.filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  color: var(--text-muted);
+}
+
+.filter-menu[hidden] {
+  display: none;
+}
+
+.filter-menu__fields,
+.filter-menu__values {
+  border: 1px solid var(--border);
+  border-radius: var(--menu-radius);
+  background: #fff;
+  box-shadow: var(--shadow-menu);
+  overflow: hidden;
+}
+
+.filter-menu__fields {
+  width: var(--filter-field-width);
+}
+
+.filter-menu__values {
+  width: var(--filter-value-width);
+  max-height: 312px;
+  overflow-y: auto;
+  margin-left: 6px;
+  transform: translateY(calc(var(--filter-menu-active-index, 0) * var(--filter-menu-field-height)));
+}
+
+.filter-menu__field {
+  appearance: none;
+  width: 100%;
+  height: var(--filter-menu-field-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border: 0;
+  background: #fff;
+  color: var(--text-muted);
+  font-size: var(--font-lg);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast),
+    color var(--motion-fast);
+
+  &:hover,
+  &:focus {
+    background: #f0f0f0;
+    color: var(--text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--chip-blue);
+    outline-offset: -2px;
+  }
+}
+
+.filter-menu__field--active {
+  background: #f0f0f0;
+}
+
+.filter-menu__field--global {
+  color: var(--nv-green-dark);
+  font-weight: 700;
+}
+
+.filter-option {
+  position: relative;
+  min-height: 43px;
+  display: grid;
+  grid-template-columns: var(--checkbox-size) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 14px;
+  padding: 0 18px;
+  background: #fff;
+  color: var(--text-muted);
+  font-size: var(--font-lg);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--motion-fast);
+
+  &:hover {
+    background: #f6f6f6;
+  }
+}
+
+.filter-option__input {
+  position: absolute;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  opacity: 0;
+}
+
+.filter-option__box {
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  display: inline-block;
+  border: 1px solid #aeb4bf;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.filter-option__input:checked + .filter-option__box {
+  border-color: var(--nv-green);
+  background: var(--nv-green);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+.filter-option__input:focus-visible + .filter-option__box {
+  outline: 2px solid var(--chip-blue);
+  outline-offset: 2px;
+}
+
+.filter-option__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

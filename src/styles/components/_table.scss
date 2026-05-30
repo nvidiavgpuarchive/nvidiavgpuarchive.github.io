@@ -1,0 +1,195 @@
+.table-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  overflow: auto;
+  border-top: 0;
+  border-bottom: 1px solid var(--border);
+
+  &::-webkit-scrollbar {
+    height: 11px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f3f3f3;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 3px solid #f3f3f3;
+    border-radius: 999px;
+    background: #bdbdbd;
+  }
+}
+
+.downloads-table {
+  display: grid;
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fff;
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: grid;
+    background: #fff;
+  }
+
+  tbody {
+    position: relative;
+    display: grid;
+  }
+
+  tr {
+    display: flex;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  th,
+  td {
+    display: flex;
+    align-items: center;
+    height: var(--table-row-height);
+    padding: 0 var(--table-cell-x);
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    height: var(--table-header-height);
+    color: var(--text);
+    font-size: var(--font-md);
+    font-weight: 700;
+  }
+
+  td {
+    overflow: hidden;
+    min-width: 0;
+    color: #333;
+    font-size: var(--font-md);
+    text-overflow: ellipsis;
+  }
+
+  th[data-column-id],
+  td[data-column-id] {
+    min-width: var(--column-width);
+    width: var(--column-width);
+    max-width: var(--column-width);
+  }
+
+  [data-column-id='description'] {
+    --column-width: 376px;
+  }
+
+  [data-column-id='category'] {
+    --column-width: 136px;
+  }
+
+  [data-column-id='name'] {
+    --column-width: 224px;
+  }
+
+  [data-column-id='productFamily'] {
+    --column-width: 192px;
+  }
+
+  [data-column-id='productVersion'] {
+    --column-width: 192px;
+  }
+
+  [data-column-id='platform'] {
+    --column-width: 248px;
+  }
+
+  [data-column-id='platformVersion'] {
+    --column-width: 240px;
+  }
+
+  [data-column-id='releaseDate'] {
+    --column-width: 152px;
+  }
+
+  [data-column-id='type'] {
+    --column-width: 136px;
+  }
+
+  [data-column-id='actions'] {
+    --column-width: 96px;
+  }
+
+  tbody tr {
+    transition: background-color 120ms ease;
+
+    &:hover {
+      background: #f4f4f4;
+    }
+  }
+
+  td:last-child button {
+    min-height: 27px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 3px;
+    background: var(--nv-green);
+    color: #111;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease,
+      box-shadow 120ms ease,
+      transform 120ms ease;
+
+    &:hover {
+      background: #89c729;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #111;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.table-empty-panel {
+  position: sticky;
+  left: 0;
+  width: 100%;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.empty-state {
+  min-height: 152px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 11px;
+  color: #767676;
+
+  svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  strong {
+    color: #333;
+    font-size: var(--font-xl);
+    font-weight: 600;
+  }
+}

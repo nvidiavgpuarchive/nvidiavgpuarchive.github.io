@@ -1,0 +1,30 @@
+.table-toolbar {
+  z-index: 20;
+  flex: 0 0 auto;
+  min-height: var(--toolbar-height);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.table-toolbar .icon-button {
+  width: var(--control-size);
+  height: var(--control-size);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.8;
+  }
+}
