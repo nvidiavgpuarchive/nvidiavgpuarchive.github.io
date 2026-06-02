@@ -1,50 +1,56 @@
-import type { RefObject } from 'react'
-import { Download, RefreshCw, SlidersHorizontal, X } from 'lucide-react'
-import { Tooltip } from '../ui/tooltip'
-import { ColumnVisibilityMenu } from './column-visibility-menu'
+import type { RefObject } from "react";
+import {
+  Download,
+  GitPullRequest,
+  RefreshCw,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
+import { ColumnVisibilityMenu } from "../ui/column-visibility-menu";
+import { FiltersPanel } from "../ui/filters-panel";
+import { Tooltip } from "../ui/tooltip";
 import {
   type FilterChip,
   type FilterKey,
   type MultiFiltersState,
   type SearchScopeKey,
   type TextFilter,
-} from './filters'
-import { FiltersPanel } from './filters-panel'
-import type { GridColumnOption } from './grid-columns'
+} from "./filters";
+import type { GridColumnOption } from "./grid-columns";
 
 type DownloadsToolbarProps = {
-  activeFilterChips: FilterChip[]
-  activeFilterKey: FilterKey | null
-  columnMenuOpen: boolean
-  columnOptions: GridColumnOption[]
-  filterMenuOpen: boolean
-  filters: MultiFiltersState
-  filterOptions: Record<FilterKey, string[]>
-  globalSearch: string
-  hasClearableSearch: boolean
-  loading: boolean
-  searchControlRef: RefObject<HTMLFormElement | null>
-  searchInput: string
-  searchScope: SearchScopeKey
-  searchScopeLabel: string
-  textFilters: TextFilter[]
-  visibleColumns: Record<string, boolean>
-  onClearAll: () => void
-  onClearFilterKey: (key: FilterKey) => void
-  onClearGlobalSearch: () => void
-  onClearTextFilter: (key: TextFilter['key']) => void
-  onColumnMenuClose: () => void
-  onColumnMenuToggle: () => void
-  onColumnVisibilityChange: (field: string, visible: boolean) => void
-  onCommitSearch: () => void
-  onExport: () => void
-  onFilterChange: (filters: MultiFiltersState) => void
-  onFilterMenuToggle: () => void
-  onReload: () => void
-  onSearchInputChange: (value: string) => void
-  onSearchScopeSelect: (key: SearchScopeKey) => void
-  onSetActiveFilterKey: (key: FilterKey | null) => void
-}
+  activeFilterChips: FilterChip[];
+  activeFilterKey: FilterKey | null;
+  columnMenuOpen: boolean;
+  columnOptions: GridColumnOption[];
+  filterMenuOpen: boolean;
+  filters: MultiFiltersState;
+  filterOptions: Record<FilterKey, string[]>;
+  globalSearch: string;
+  hasClearableSearch: boolean;
+  loading: boolean;
+  searchControlRef: RefObject<HTMLFormElement | null>;
+  searchInput: string;
+  searchScope: SearchScopeKey;
+  searchScopeLabel: string;
+  textFilters: TextFilter[];
+  visibleColumns: Record<string, boolean>;
+  onClearAll: () => void;
+  onClearFilterKey: (key: FilterKey) => void;
+  onClearGlobalSearch: () => void;
+  onClearTextFilter: (key: TextFilter["key"]) => void;
+  onColumnMenuClose: () => void;
+  onColumnMenuToggle: () => void;
+  onColumnVisibilityChange: (field: string, visible: boolean) => void;
+  onCommitSearch: () => void;
+  onExport: () => void;
+  onFilterChange: (filters: MultiFiltersState) => void;
+  onFilterMenuToggle: () => void;
+  onReload: () => void;
+  onSearchInputChange: (value: string) => void;
+  onSearchScopeSelect: (key: SearchScopeKey) => void;
+  onSetActiveFilterKey: (key: FilterKey | null) => void;
+};
 
 export function DownloadsToolbar({
   activeFilterChips,
@@ -83,15 +89,17 @@ export function DownloadsToolbar({
     <section aria-label="Toolbar" className="table-toolbar">
       <form
         className={[
-          'search-control',
-          filterMenuOpen || hasClearableSearch || searchScope !== 'global' ? 'search-control--active' : '',
+          "search-control",
+          filterMenuOpen || hasClearableSearch || searchScope !== "global"
+            ? "search-control--active"
+            : "",
         ]
           .filter(Boolean)
-          .join(' ')}
+          .join(" ")}
         ref={searchControlRef}
         onSubmit={(event) => {
-          event.preventDefault()
-          onCommitSearch()
+          event.preventDefault();
+          onCommitSearch();
         }}
       >
         <Tooltip content="Open filters">
@@ -102,7 +110,11 @@ export function DownloadsToolbar({
               onClick={onFilterMenuToggle}
               type="button"
             >
-              <SlidersHorizontal aria-hidden="true" className="search-control__filter-icon" size={26} />
+              <SlidersHorizontal
+                aria-hidden="true"
+                className="search-control__filter-icon"
+                size={26}
+              />
             </button>
           )}
         </Tooltip>
@@ -119,14 +131,23 @@ export function DownloadsToolbar({
         />
 
         {activeFilterChips.map((chip) => (
-          <button className="search-chip" key={chip.key} onClick={() => onClearFilterKey(chip.key)} type="button">
+          <button
+            className="search-chip"
+            key={chip.key}
+            onClick={() => onClearFilterKey(chip.key)}
+            type="button"
+          >
             <span>{chip.label}</span>
             <X aria-hidden="true" size={16} />
           </button>
         ))}
 
         {globalSearch ? (
-          <button className="search-chip search-chip--global" onClick={onClearGlobalSearch} type="button">
+          <button
+            className="search-chip search-chip--global"
+            onClick={onClearGlobalSearch}
+            type="button"
+          >
             <span>Global: {globalSearch}</span>
             <X aria-hidden="true" size={16} />
           </button>
@@ -149,7 +170,11 @@ export function DownloadsToolbar({
         <input
           className="search-control__input"
           onChange={(event) => onSearchInputChange(event.target.value)}
-          placeholder={searchScope === 'global' ? 'Search' : `Filter by ${searchScopeLabel}`}
+          placeholder={
+            searchScope === "global"
+              ? "Search"
+              : `Filter by ${searchScopeLabel}`
+          }
           type="search"
           value={searchInput}
         />
@@ -157,7 +182,12 @@ export function DownloadsToolbar({
         {hasClearableSearch ? (
           <Tooltip content="Clear filters">
             {(tooltipProps) => (
-              <button {...tooltipProps} className="search-control__clear" onClick={onClearAll} type="button">
+              <button
+                {...tooltipProps}
+                className="search-control__clear"
+                onClick={onClearAll}
+                type="button"
+              >
                 <X aria-hidden="true" size={32} />
               </button>
             )}
@@ -168,7 +198,13 @@ export function DownloadsToolbar({
       <div className="toolbar-actions">
         <Tooltip content="Refresh data">
           {(tooltipProps) => (
-            <button {...tooltipProps} className="icon-button" disabled={loading} onClick={onReload} type="button">
+            <button
+              {...tooltipProps}
+              className="icon-button"
+              disabled={loading}
+              onClick={onReload}
+              type="button"
+            >
               <RefreshCw aria-hidden="true" size={16} />
               <span>Reload</span>
             </button>
@@ -177,7 +213,12 @@ export function DownloadsToolbar({
 
         <Tooltip content="Export CSV">
           {(tooltipProps) => (
-            <button {...tooltipProps} className="icon-button" onClick={onExport} type="button">
+            <button
+              {...tooltipProps}
+              className="icon-button"
+              onClick={onExport}
+              type="button"
+            >
               <Download aria-hidden="true" size={16} />
               <span>Export CSV</span>
             </button>
@@ -192,7 +233,22 @@ export function DownloadsToolbar({
           open={columnMenuOpen}
           visibleColumns={visibleColumns}
         />
+
+        <Tooltip content="Open GitHub repo">
+          {(tooltipProps) => (
+            <a
+              {...tooltipProps}
+              className="icon-button"
+              href="https://github.com/nvidiavgpuarchive/index"
+              rel="noreferrer"
+              target="_blank"
+            >
+              <GitPullRequest aria-hidden="true" size={16} />
+              <span>GitHub</span>
+            </a>
+          )}
+        </Tooltip>
       </div>
     </section>
-  )
+  );
 }

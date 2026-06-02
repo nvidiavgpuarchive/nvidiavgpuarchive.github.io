@@ -11,6 +11,7 @@ type DownloadsGridProps = {
 }
 
 const defaultColDef: ColDef<DownloadRow> = {
+  flex: 1,
   filter: false,
   resizable: true,
   sortable: true,
@@ -50,8 +51,10 @@ export function DownloadsGrid({
         theme="legacy"
         tooltipHideDelay={10000}
         tooltipInteraction
-        tooltipShowDelay={0}
-        tooltipSwitchShowDelay={0}
+        tooltipMouseTrack
+        tooltipShowDelay={1}
+        tooltipShowMode="standard"
+        tooltipSwitchShowDelay={1}
         tooltipTrigger="hover"
       />
     </section>

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { defaultDumpUrl, loadDump, type LoadProgress } from './data/load-dump'
 import type { DownloadRow } from './data/types'
-import { LoadingDialog } from './loading-dialog'
 import { DownloadsTable } from './table/downloads-table'
+import { LoadingDialog } from './ui/loading-dialog'
 
 const initialProgress: LoadProgress = {
   loaded: 0,

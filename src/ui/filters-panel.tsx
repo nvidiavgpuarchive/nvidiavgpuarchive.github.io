@@ -6,7 +6,7 @@ import {
   type FilterKey,
   type MultiFiltersState,
   type SearchScopeKey,
-} from './filters'
+} from '../table/filters'
 
 const menuFields: Array<{
   filterKey?: FilterKey

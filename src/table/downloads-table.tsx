@@ -1,7 +1,10 @@
 import type { DoesExternalFilterPass, GridApi, GridReadyEvent, IsExternalFilterPresent } from 'ag-grid-community'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DownloadRow } from '../data/types'
-import { DetailsDialog } from './details-dialog'
+import { ChecksumsDialog } from '../ui/checksums-dialog'
+import { DetailsDialog } from '../ui/details-dialog'
+import type { DownloadActionPanel } from '../ui/download-actions'
+import { ZipContentDialog } from '../ui/zip-content-dialog'
 import { DownloadsGrid } from './downloads-grid'
 import { DownloadsToolbar } from './downloads-toolbar'
 import {
@@ -25,6 +28,11 @@ type DownloadsTableProps = {
   rows: DownloadRow[]
   loading: boolean
   onReload: () => void
+}
+
+type ActiveDialog = {
+  panel: DownloadActionPanel
+  row: DownloadRow
 }
 
 const defaultVisibleColumns = Object.fromEntries(
@@ -84,10 +92,13 @@ export function DownloadsTable({ rows, loading, onReload }: DownloadsTableProps)
   const [activeFilterKey, setActiveFilterKey] = useState<FilterKey | null>(null)
   const [columnMenuOpen, setColumnMenuOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(defaultVisibleColumns)
-  const [detailsRow, setDetailsRow] = useState<DownloadRow | null>(null)
+  const [activeDialog, setActiveDialog] = useState<ActiveDialog | null>(null)
   const searchControlRef = useRef<HTMLFormElement>(null)
 
-  const columnDefs = useMemo(() => createGridColumns(setDetailsRow), [])
+  const openActionPanel = useCallback((row: DownloadRow, panel: DownloadActionPanel) => {
+    setActiveDialog({ panel, row })
+  }, [])
+  const columnDefs = useMemo(() => createGridColumns(openActionPanel), [openActionPanel])
   const filterOptions = useMemo(() => buildFilterOptions(rows), [rows])
   const tableFilterModel = useMemo<TableFilterModel>(
     () => ({
@@ -300,7 +311,15 @@ export function DownloadsTable({ rows, loading, onReload }: DownloadsTableProps)
         rows={rows}
       />
 
-      {detailsRow ? <DetailsDialog onClose={() => setDetailsRow(null)} row={detailsRow} /> : null}
+      {activeDialog?.panel === 'details' ? (
+        <DetailsDialog onClose={() => setActiveDialog(null)} row={activeDialog.row} />
+      ) : null}
+      {activeDialog?.panel === 'checksums' ? (
+        <ChecksumsDialog onClose={() => setActiveDialog(null)} row={activeDialog.row} />
+      ) : null}
+      {activeDialog?.panel === 'zipContent' ? (
+        <ZipContentDialog onClose={() => setActiveDialog(null)} row={activeDialog.row} />
+      ) : null}
     </main>
   )
 }

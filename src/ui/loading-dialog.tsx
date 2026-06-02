@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { LoadProgress } from './data/load-dump'
+import type { LoadProgress } from '../data/load-dump'
 
 type LoadingDialogProps = {
   onDismiss: () => void

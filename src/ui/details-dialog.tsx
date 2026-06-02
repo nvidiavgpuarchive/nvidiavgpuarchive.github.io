@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import type { DownloadRow } from '../data/types'
-import { Tooltip } from '../ui/tooltip'
+import { Tooltip } from './tooltip'
 
 type DetailsDialogProps = {
   row: DownloadRow
@@ -52,7 +52,6 @@ const formatReleaseDate = (date: string) => {
 
 export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const otherFilenames = row.filenames.slice(1)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -111,24 +110,38 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
               <span>Name:</span>
               <strong>{textValue(row.meta.name)}</strong>
             </div>
+            <div className="detail-field detail-field-wide">
+              <span>File Name:</span>
+              <strong>{row.filename || 'No Title'}</strong>
+            </div>
             <div className="details-pair">
               <div className="detail-field">
                 <span>Product Name:</span>
                 <strong>{textValue(row.meta.productName)}</strong>
               </div>
               <div className="detail-field">
-                <span>Version:</span>
-                <strong>{row.productVersion || 'N/A'}</strong>
+                <span>File Size:</span>
+                <strong>{formatBytes(row.size) || 'N/A'}</strong>
               </div>
             </div>
             <div className="details-pair">
               <div className="detail-field">
+                <span>Version:</span>
+                <strong>{row.productVersion || 'N/A'}</strong>
+              </div>
+              <div className="detail-field">
                 <span>Platform Name:</span>
                 <strong>{row.platform || 'N/A'}</strong>
               </div>
+            </div>
+            <div className="details-pair">
               <div className="detail-field">
                 <span>Platform Version:</span>
                 <strong>{row.platformVersion || 'N/A'}</strong>
+              </div>
+              <div className="detail-field">
+                <span>ProductFamilies:</span>
+                <strong>{row.productFamily || 'N/A'}</strong>
               </div>
             </div>
             {'nondrivercategory' in row.meta ? (
@@ -140,10 +153,6 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
             <div className="detail-field detail-inline">
               <span>ChecksumFormat:</span>
               <strong>{textValue(row.meta.checksumFormat)}</strong>
-            </div>
-            <div className="detail-field detail-inline">
-              <span>ProductFamilies:</span>
-              <strong>{row.productFamily || 'N/A'}</strong>
             </div>
           </div>
 
@@ -165,75 +174,6 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
               <strong>{row.downloadType || 'N/A'}</strong>
             </div>
           </aside>
-        </section>
-
-        <section className="details-section">
-          <h3>File</h3>
-          <table className="details-link-table">
-            <thead>
-              <tr>
-                <th>File Name</th>
-                <th>File Size</th>
-                <th>Torrent</th>
-                <th>HTTP Link</th>
-                <th>Internet Archive</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{row.filename || 'No Title'}</td>
-                <td>{formatBytes(row.size)}</td>
-                <td>
-                  <a href={row.torrentUrl} rel="noreferrer" target="_blank">Download</a>
-                </td>
-                <td>
-                  <a href={row.httpUrl} rel="noreferrer" target="_blank">Download</a>
-                </td>
-                <td>
-                  <a href={row.archiveUrl} rel="noreferrer" target="_blank">View Page</a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {otherFilenames.length > 0 ? (
-            <blockquote className="additional-files">
-              {otherFilenames.map((filename) => (
-                <p key={filename}>{filename}</p>
-              ))}
-            </blockquote>
-          ) : null}
-        </section>
-
-        <section className="details-section">
-          <h3>Checksums</h3>
-          {row.checksums.length > 0 ? (
-            <table>
-              <tbody>
-                {row.checksums.map((checksum) => (
-                  <tr key={checksum.format}>
-                    <th>{checksum.format}</th>
-                    <td>
-                      <code>{checksum.value}</code>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No checksums listed.</p>
-          )}
-        </section>
-
-        <section className="details-section">
-          <h3>Zip Content</h3>
-          {row.zipContent.length > 0 ? (
-            <pre>
-              <code>{row.zipContent.join('\n')}</code>
-            </pre>
-          ) : (
-            <p>No zip content listed.</p>
-          )}
         </section>
       </article>
     </dialog>

@@ -1,6 +1,6 @@
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import type { DownloadRow } from "../data/types";
-import { Tooltip } from "../ui/tooltip";
+import { DownloadActions, type DownloadActionPanel } from "../ui/download-actions";
 
 export type GridColumnOption = {
   field: keyof DownloadRow;
@@ -38,99 +38,96 @@ const formatReleaseDate = (date: string) => {
   });
 };
 
-const detailsRenderer = (
+const actionsRenderer = (
   params: ICellRendererParams<DownloadRow>,
-  onDetails: (row: DownloadRow) => void,
+  onOpenPanel: (row: DownloadRow, panel: DownloadActionPanel) => void,
 ) => {
   if (!params.data) {
     return null;
   }
 
-  return (
-    <Tooltip content="View download details">
-      {(tooltipProps) => (
-        <button
-          {...tooltipProps}
-          className="grid-details-button"
-          onClick={() => onDetails(params.data!)}
-          type="button"
-        >
-          Details
-        </button>
-      )}
-    </Tooltip>
-  );
+  return <DownloadActions onOpenPanel={onOpenPanel} row={params.data} />;
 };
 
 export const createGridColumns = (
-  onDetails: (row: DownloadRow) => void,
+  onOpenPanel: (row: DownloadRow, panel: DownloadActionPanel) => void,
 ): ColDef<DownloadRow>[] => [
   {
     field: "category",
+    flex: 2,
     headerName: "Category",
     hide: true,
-    maxWidth: 136,
+    minWidth: 96,
     tooltipField: "category",
   },
   {
     field: "name",
+    flex: 3,
     headerName: "Name",
     hide: true,
-    maxWidth: 256,
+    minWidth: 220,
     tooltipField: "name",
   },
   {
     field: "description",
+    flex: 5,
     headerName: "Description",
-    minWidth: 384,
+    minWidth: 360,
     tooltipField: "description",
   },
   {
     field: "productFamily",
+    flex: 2,
     headerName: "Prod Family",
-    maxWidth: 128,
+    minWidth: 120,
     tooltipField: "productFamily",
   },
   {
     field: "productVersion",
+    flex: 2,
     headerName: "Prod Version",
-    maxWidth: 128,
+    minWidth: 120,
     tooltipField: "productVersion",
   },
   {
     field: "platform",
+    flex: 3,
     headerName: "Platform",
-    maxWidth: 248,
+    minWidth: 180,
     tooltipField: "platform",
   },
   {
     field: "platformVersion",
+    flex: 2,
     headerName: "Platform Version",
-    maxWidth: 144,
+    minWidth: 150,
     tooltipField: "platformVersion",
   },
   {
     field: "releaseDate",
+    flex: 2,
     headerName: "Release Date",
-    maxWidth: 136,
+    minWidth: 132,
     sort: "desc",
     tooltipField: "releaseDate",
     valueFormatter: ({ value }) => formatReleaseDate(String(value ?? "")),
   },
   {
     field: "type",
+    flex: 2,
     headerName: "Type",
     hide: true,
-    maxWidth: 136,
+    minWidth: 120,
     tooltipField: "type",
   },
   {
     cellRenderer: (params: ICellRendererParams<DownloadRow>) =>
-      detailsRenderer(params, onDetails),
+      actionsRenderer(params, onOpenPanel),
     colId: "actions",
+    flex: 2,
     filter: false,
     headerName: "Actions",
-    maxWidth: 96,
+    minWidth: 150,
     sortable: false,
   },
 ];

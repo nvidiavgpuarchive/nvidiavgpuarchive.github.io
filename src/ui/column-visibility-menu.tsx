@@ -1,7 +1,7 @@
 import { Columns3 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { Tooltip } from '../ui/tooltip'
-import type { GridColumnOption } from './grid-columns'
+import type { GridColumnOption } from '../table/grid-columns'
+import { Tooltip } from './tooltip'
 
 type ColumnVisibilityMenuProps = {
   columns: GridColumnOption[]
@@ -65,7 +65,8 @@ export function ColumnVisibilityMenu({
                 onChange={(event) => onVisibilityChange(String(column.field), event.target.checked)}
                 type="checkbox"
               />
-              <span>{column.label}</span>
+              <span aria-hidden="true" className="column-menu__box" />
+              <span className="column-menu__label">{column.label}</span>
             </label>
           ))}
         </div>
