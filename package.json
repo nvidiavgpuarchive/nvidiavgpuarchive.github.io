@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run build:static",
+    "build:static": "tsx scripts/generate-static-pages.ts",
     "lint": "eslint .",
     "lint:scss": "stylelint \"src/**/*.scss\"",
     "lint:all": "npm run lint && npm run lint:scss",
@@ -30,8 +31,10 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "sass": "^1.100.0",
+    "sitemap": "^9.0.1",
     "stylelint": "^17.12.0",
     "stylelint-config-standard-scss": "^17.0.0",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.60.1",
     "vite": "^8.0.16"
