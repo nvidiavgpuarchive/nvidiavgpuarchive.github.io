@@ -1,7 +1,5 @@
 import type { RefObject } from 'react'
-import type { Table } from '@tanstack/react-table'
 import { Download, RefreshCw, SlidersHorizontal, X } from 'lucide-react'
-import type { DownloadRow } from '../data/types'
 import { Tooltip } from '../ui/tooltip'
 import { ColumnVisibilityMenu } from './column-visibility-menu'
 import {
@@ -12,11 +10,13 @@ import {
   type TextFilter,
 } from './filters'
 import { FiltersPanel } from './filters-panel'
+import type { GridColumnOption } from './grid-columns'
 
 type DownloadsToolbarProps = {
   activeFilterChips: FilterChip[]
   activeFilterKey: FilterKey | null
   columnMenuOpen: boolean
+  columnOptions: GridColumnOption[]
   filterMenuOpen: boolean
   filters: MultiFiltersState
   filterOptions: Record<FilterKey, string[]>
@@ -27,14 +27,15 @@ type DownloadsToolbarProps = {
   searchInput: string
   searchScope: SearchScopeKey
   searchScopeLabel: string
-  table: Table<DownloadRow>
   textFilters: TextFilter[]
+  visibleColumns: Record<string, boolean>
   onClearAll: () => void
   onClearFilterKey: (key: FilterKey) => void
   onClearGlobalSearch: () => void
   onClearTextFilter: (key: TextFilter['key']) => void
   onColumnMenuClose: () => void
   onColumnMenuToggle: () => void
+  onColumnVisibilityChange: (field: string, visible: boolean) => void
   onCommitSearch: () => void
   onExport: () => void
   onFilterChange: (filters: MultiFiltersState) => void
@@ -49,6 +50,7 @@ export function DownloadsToolbar({
   activeFilterChips,
   activeFilterKey,
   columnMenuOpen,
+  columnOptions,
   filterMenuOpen,
   filters,
   filterOptions,
@@ -59,14 +61,15 @@ export function DownloadsToolbar({
   searchInput,
   searchScope,
   searchScopeLabel,
-  table,
   textFilters,
+  visibleColumns,
   onClearAll,
   onClearFilterKey,
   onClearGlobalSearch,
   onClearTextFilter,
   onColumnMenuClose,
   onColumnMenuToggle,
+  onColumnVisibilityChange,
   onCommitSearch,
   onExport,
   onFilterChange,
@@ -182,10 +185,12 @@ export function DownloadsToolbar({
         </Tooltip>
 
         <ColumnVisibilityMenu
+          columns={columnOptions}
           onClose={onColumnMenuClose}
           onToggle={onColumnMenuToggle}
+          onVisibilityChange={onColumnVisibilityChange}
           open={columnMenuOpen}
-          table={table}
+          visibleColumns={visibleColumns}
         />
       </div>
     </section>

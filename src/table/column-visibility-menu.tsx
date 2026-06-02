@@ -1,32 +1,26 @@
 import { Columns3 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import type { Table } from '@tanstack/react-table'
-import type { DownloadRow } from '../data/types'
 import { Tooltip } from '../ui/tooltip'
-
-const columnLabels: Record<string, string> = {
-  category: 'Category',
-  name: 'Name',
-  platform: 'Platform',
-  platformVersion: 'Platform Version',
-  productFamily: 'Product Family',
-  productVersion: 'Product Version',
-  releaseDate: 'Release Date',
-  type: 'Type',
-}
+import type { GridColumnOption } from './grid-columns'
 
 type ColumnVisibilityMenuProps = {
+  columns: GridColumnOption[]
+  open: boolean
+  visibleColumns: Record<string, boolean>
   onClose: () => void
   onToggle: () => void
-  open: boolean
-  table: Table<DownloadRow>
+  onVisibilityChange: (field: string, visible: boolean) => void
 }
 
-export function ColumnVisibilityMenu({ onClose, onToggle, open, table }: ColumnVisibilityMenuProps) {
+export function ColumnVisibilityMenu({
+  columns,
+  open,
+  visibleColumns,
+  onClose,
+  onToggle,
+  onVisibilityChange,
+}: ColumnVisibilityMenuProps) {
   const rootRef = useRef<HTMLDivElement>(null)
-  const columns = table
-    .getAllLeafColumns()
-    .filter((column) => columnLabels[column.id])
 
   useEffect(() => {
     if (!open) {
@@ -64,14 +58,14 @@ export function ColumnVisibilityMenu({ onClose, onToggle, open, table }: ColumnV
       {open ? (
         <div className="column-menu" role="menu">
           {columns.map((column) => (
-            <label className="column-menu__option" key={column.id}>
+            <label className="column-menu__option" key={column.field}>
               <input
                 className="column-menu__checkbox"
-                checked={column.getIsVisible()}
-                onChange={column.getToggleVisibilityHandler()}
+                checked={visibleColumns[String(column.field)] ?? column.defaultVisible}
+                onChange={(event) => onVisibilityChange(String(column.field), event.target.checked)}
                 type="checkbox"
               />
-              <span>{columnLabels[column.id]}</span>
+              <span>{column.label}</span>
             </label>
           ))}
         </div>

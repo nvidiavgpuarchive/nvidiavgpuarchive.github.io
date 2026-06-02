@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 0;
+  padding: 3px 0;
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
@@ -19,8 +19,8 @@
 }
 
 .table-toolbar .icon-button {
-  width: var(--control-size);
-  height: var(--control-size);
+  width: 30px;
+  height: 30px;
 
   svg {
     width: 20px;

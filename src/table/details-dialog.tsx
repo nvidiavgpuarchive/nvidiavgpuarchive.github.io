@@ -20,21 +20,6 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
 }
 
-const formatKey = (key: string) => {
-  return key
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-}
-
-const metaValue = (value: unknown) => {
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
-  }
-
-  return <code>{JSON.stringify(value)}</code>
-}
-
 const textValue = (value: unknown, fallback = 'N/A') => {
   if (typeof value === 'string' && value) {
     return value
@@ -68,9 +53,6 @@ const formatReleaseDate = (date: string) => {
 export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const otherFilenames = row.filenames.slice(1)
-  const metaEntries = Object.entries(row.meta).filter(
-    ([key]) => key !== 'description' && key !== 'downloadId',
-  )
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -226,7 +208,7 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
         <section className="details-section">
           <h3>Checksums</h3>
           {row.checksums.length > 0 ? (
-            <table className="details-checksum-table">
+            <table>
               <tbody>
                 {row.checksums.map((checksum) => (
                   <tr key={checksum.format}>
@@ -241,20 +223,6 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
           ) : (
             <p>No checksums listed.</p>
           )}
-        </section>
-
-        <section className="details-section">
-          <h3>Raw Meta</h3>
-          <table className="details-meta-table">
-            <tbody>
-              {metaEntries.map(([key, value]) => (
-                <tr key={key}>
-                  <th>{formatKey(key)}</th>
-                  <td>{metaValue(value)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </section>
 
         <section className="details-section">

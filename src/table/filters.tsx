@@ -20,6 +20,13 @@ export type FilterChip = {
 }
 
 export type MultiFiltersState = Record<FilterKey, string[]>
+export type TableFilterModel = {
+  filters: MultiFiltersState
+  globalSearch: string
+  liveSearch: string
+  searchScope: SearchScopeKey
+  textFilters: TextFilter[]
+}
 
 type FilterConfig = {
   key: FilterKey
@@ -123,6 +130,8 @@ export const buildFilterChips = (filters: MultiFiltersState): FilterChip[] => {
   })
 }
 
+export const appendSearchTerm = (current: string, next: string) => (current ? `${current},${next}` : next)
+
 const searchTerms = (search: string) => {
   const value = search.trim().toLowerCase()
 
@@ -197,7 +206,21 @@ export const rowMatchesTextFilters = (row: DownloadRow, filters: TextFilter[]) =
   })
 }
 
-export const rowMatchesTableFilters = (
+export const tableFilterModelHasFilters = ({
+  filters,
+  globalSearch,
+  liveSearch,
+  textFilters,
+}: TableFilterModel) => {
+  return (
+    globalSearch.trim() !== '' ||
+    liveSearch.trim() !== '' ||
+    textFilters.length > 0 ||
+    Object.values(filters).some((values) => values.length > 0)
+  )
+}
+
+export const rowMatchesTableFilterModel = (
   row: DownloadRow,
   {
     filters,
@@ -205,13 +228,7 @@ export const rowMatchesTableFilters = (
     liveSearch,
     searchScope,
     textFilters,
-  }: {
-    filters: MultiFiltersState
-    globalSearch: string
-    liveSearch: string
-    searchScope: SearchScopeKey
-    textFilters: TextFilter[]
-  },
+  }: TableFilterModel,
 ) => {
   if (!rowMatchesSearch(row, globalSearch)) {
     return false
