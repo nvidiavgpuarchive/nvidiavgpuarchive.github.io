@@ -7,6 +7,7 @@ type DownloadsGridProps = {
   rows: DownloadRow[]
   doesExternalFilterPass: DoesExternalFilterPass<DownloadRow>
   isExternalFilterPresent: IsExternalFilterPresent<DownloadRow>
+  lastUpdatedAt?: number
   onGridReady: (event: GridReadyEvent<DownloadRow>) => void
 }
 
@@ -22,9 +23,17 @@ export function DownloadsGrid({
   columnDefs,
   doesExternalFilterPass,
   isExternalFilterPresent,
+  lastUpdatedAt,
   onGridReady,
   rows,
 }: DownloadsGridProps) {
+  const lastUpdatedLabel = lastUpdatedAt
+    ? new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }).format(new Date(lastUpdatedAt))
+    : undefined
+
   return (
     <section aria-label="Downloads table" className="downloads-grid-shell">
       <AgGridReact<DownloadRow>
@@ -57,6 +66,9 @@ export function DownloadsGrid({
         tooltipSwitchShowDelay={1}
         tooltipTrigger="hover"
       />
+      {lastUpdatedLabel ? (
+        <p className="downloads-grid__last-updated">Last updated on {lastUpdatedLabel}</p>
+      ) : null}
     </section>
   )
 }

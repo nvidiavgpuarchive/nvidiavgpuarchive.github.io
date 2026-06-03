@@ -39,8 +39,43 @@ const cacheBustedUrl = (url: string) => {
 }
 
 const dumpCacheMetaKey = (url: string) => `nvidia-dump-cache-meta:${url}`
+const dumpNetworkFetchKey = (url: string) => `nvidia-dump-network-fetched-at:${url}`
 
 const dumpCacheAvailable = () => 'caches' in window && 'localStorage' in window
+
+const localStorageAvailable = () => 'localStorage' in window
+
+export const readDumpNetworkFetchTimestamp = (url: string) => {
+  if (!localStorageAvailable()) {
+    return undefined
+  }
+
+  try {
+    const value = Number(window.localStorage.getItem(dumpNetworkFetchKey(url)))
+
+    return Number.isFinite(value) && value > 0 ? value : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const writeDumpNetworkFetchTimestamp = (url: string, fetchedAt = Date.now()) => {
+  if (!localStorageAvailable()) {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(dumpNetworkFetchKey(url), String(fetchedAt))
+  } catch {
+    // The timestamp only controls cache freshness across app builds.
+  }
+}
+
+export const shouldRefreshDumpForBuild = (url: string, buildTimestamp: number) => {
+  const lastNetworkFetchAt = readDumpNetworkFetchTimestamp(url)
+
+  return !lastNetworkFetchAt || buildTimestamp > lastNetworkFetchAt
+}
 
 const readDumpCacheMeta = (url: string) => {
   try {
@@ -260,7 +295,10 @@ export const loadDump = async (
   }
 
   const text = await readResponseText(response, expectedTotal, onProgress)
+  const dump = JSON.parse(text) as DumpFile
+
   await writeCachedDump(url, text, expectedTotal)
+  writeDumpNetworkFetchTimestamp(url)
 
   onProgress?.({
     loaded: expectedTotal ?? text.length,
@@ -268,6 +306,5 @@ export const loadDump = async (
     total: expectedTotal ?? text.length,
   })
 
-  const dump = JSON.parse(text) as DumpFile
   return normalizeDump(dump)
 }

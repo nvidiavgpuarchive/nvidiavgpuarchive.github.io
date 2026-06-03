@@ -38,7 +38,7 @@
   }
 }
 
-.loading-dialog progress {
+.loading-dialog__progress {
   width: 100%;
   height: 10px;
   display: block;
@@ -49,17 +49,44 @@
   accent-color: var(--nv-green);
 }
 
-.loading-dialog progress::-webkit-progress-bar {
+.loading-dialog__progress::-webkit-progress-bar {
   border-radius: 999px;
   background: #e8e8e8;
 }
 
-.loading-dialog progress::-webkit-progress-value {
+.loading-dialog__progress::-webkit-progress-value {
   border-radius: 999px;
   background: var(--nv-green);
 }
 
-.loading-dialog progress::-moz-progress-bar {
+.loading-dialog__progress::-moz-progress-bar {
   border-radius: 999px;
   background: var(--nv-green);
+}
+
+.loading-dialog__progress--indeterminate {
+  position: relative;
+}
+
+.loading-dialog__progress--indeterminate span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: var(--nv-green);
+  animation: loading-dialog-indeterminate 1.15s ease-in-out infinite;
+}
+
+@keyframes loading-dialog-indeterminate {
+  0% {
+    transform: translateX(-115%);
+  }
+
+  50% {
+    transform: translateX(85%);
+  }
+
+  100% {
+    transform: translateX(240%);
+  }
 }

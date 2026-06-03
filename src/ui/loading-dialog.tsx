@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import type { LoadProgress } from '../data/load-dump'
 
 type LoadingDialogProps = {
@@ -19,6 +19,10 @@ const formatBytes = (bytes: number) => {
 }
 
 const progressLabel = (progress: LoadProgress) => {
+  if (progress.phase === 'metadata') {
+    return 'Loading dump.json...'
+  }
+
   if (progress.phase === 'requesting') {
     return 'Requesting dump.json...'
   }
@@ -40,7 +44,7 @@ export function LoadingDialog({ onDismiss, progress }: LoadingDialogProps) {
     ? Math.min(100, Math.round((progress.loaded / progress.total) * 100))
     : undefined
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const dialog = dialogRef.current
 
     if (!dialog) {
@@ -78,9 +82,15 @@ export function LoadingDialog({ onDismiss, progress }: LoadingDialogProps) {
           {percentage === undefined ? null : <span>{percentage}%</span>}
         </div>
         {percentage === undefined ? (
-          <progress />
+          <div
+            aria-label={progressLabel(progress)}
+            className="loading-dialog__progress loading-dialog__progress--indeterminate"
+            role="progressbar"
+          >
+            <span />
+          </div>
         ) : (
-          <progress max={100} value={percentage}>
+          <progress className="loading-dialog__progress" max={100} value={percentage}>
             {percentage}%
           </progress>
         )}

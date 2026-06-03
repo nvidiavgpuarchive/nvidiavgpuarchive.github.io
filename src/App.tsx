@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { defaultDumpUrl, loadDump, type LoadProgress } from './data/load-dump'
+import {
+  defaultDumpUrl,
+  loadDump,
+  readDumpNetworkFetchTimestamp,
+  shouldRefreshDumpForBuild,
+  type LoadProgress,
+} from './data/load-dump'
 import type { DownloadRow } from './data/types'
 import { DownloadsTable } from './table/downloads-table'
 import { LoadingDialog } from './ui/loading-dialog'
@@ -9,12 +15,15 @@ const initialProgress: LoadProgress = {
   phase: 'requesting',
 }
 
+const readLastUpdatedAt = () => readDumpNetworkFetchTimestamp(defaultDumpUrl)
+
 function App() {
   const [rows, setRows] = useState<DownloadRow[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingDialogDismissed, setLoadingDialogDismissed] = useState(false)
   const [progress, setProgress] = useState<LoadProgress>(initialProgress)
   const [error, setError] = useState<string | null>(null)
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | undefined>(readLastUpdatedAt)
 
   const reload = useCallback(async () => {
     setLoading(true)
@@ -24,6 +33,7 @@ function App() {
 
     try {
       setRows(await loadDump(defaultDumpUrl, setProgress, { forceRefresh: true }))
+      setLastUpdatedAt(readLastUpdatedAt())
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load dump.json')
     } finally {
@@ -36,14 +46,16 @@ function App() {
 
     const loadInitialDump = async () => {
       try {
+        const forceRefresh = shouldRefreshDumpForBuild(defaultDumpUrl, __APP_BUILD_TIMESTAMP__)
         const initialRows = await loadDump(defaultDumpUrl, (nextProgress) => {
           if (active) {
             setProgress(nextProgress)
           }
-        })
+        }, { forceRefresh })
 
         if (active) {
           setRows(initialRows)
+          setLastUpdatedAt(readLastUpdatedAt())
         }
       } catch (loadError) {
         if (active) {
@@ -66,11 +78,12 @@ function App() {
   return (
     <>
       {error ? <p role="alert">{error}</p> : null}
-      {loading && progress.phase !== 'metadata' && !loadingDialogDismissed ? (
+      {loading && !loadingDialogDismissed ? (
         <LoadingDialog onDismiss={() => setLoadingDialogDismissed(true)} progress={progress} />
       ) : null}
       <DownloadsTable
         loading={loading}
+        lastUpdatedAt={lastUpdatedAt}
         onReload={reload}
         rows={rows}
       />

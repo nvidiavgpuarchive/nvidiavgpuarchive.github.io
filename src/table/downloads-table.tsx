@@ -27,6 +27,7 @@ import { createGridColumns, gridColumnOptions } from './grid-columns'
 type DownloadsTableProps = {
   rows: DownloadRow[]
   loading: boolean
+  lastUpdatedAt?: number
   onReload: () => void
 }
 
@@ -81,7 +82,7 @@ const formatCsvReleaseDate = (date: string) => {
   })
 }
 
-export function DownloadsTable({ rows, loading, onReload }: DownloadsTableProps) {
+export function DownloadsTable({ rows, loading, lastUpdatedAt, onReload }: DownloadsTableProps) {
   const gridApiRef = useRef<GridApi<DownloadRow> | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [globalSearch, setGlobalSearch] = useState('')
@@ -307,6 +308,7 @@ export function DownloadsTable({ rows, loading, onReload }: DownloadsTableProps)
         columnDefs={columnDefs}
         doesExternalFilterPass={doesExternalFilterPass}
         isExternalFilterPresent={isExternalFilterPresent}
+        lastUpdatedAt={lastUpdatedAt}
         onGridReady={handleGridReady}
         rows={rows}
       />

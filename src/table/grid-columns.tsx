@@ -1,6 +1,9 @@
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import type { DownloadRow } from "../data/types";
-import { DownloadActions, type DownloadActionPanel } from "../ui/download-actions";
+import {
+  DownloadActions,
+  type DownloadActionPanel,
+} from "../ui/download-actions";
 
 export type GridColumnOption = {
   field: keyof DownloadRow;
@@ -9,8 +12,8 @@ export type GridColumnOption = {
 };
 
 export const gridColumnOptions: GridColumnOption[] = [
-  { defaultVisible: false, field: "category", label: "Category" },
-  { defaultVisible: false, field: "name", label: "Name" },
+  { defaultVisible: true, field: "category", label: "Category" },
+  { defaultVisible: true, field: "name", label: "Name" },
   { defaultVisible: true, field: "description", label: "Description" },
   { defaultVisible: true, field: "productFamily", label: "Product Family" },
   { defaultVisible: true, field: "productVersion", label: "Product Version" },

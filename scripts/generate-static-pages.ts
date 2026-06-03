@@ -10,6 +10,8 @@ const defaultSiteUrl = 'https://nvidiavgpuarchive.github.io'
 const distDir = path.resolve('dist')
 const catalogPageSize = Number(process.env.STATIC_CATALOG_PAGE_SIZE ?? 50)
 const siteUrl = normalizeSiteUrl(process.env.SITE_URL ?? process.env.VITE_SITE_URL ?? defaultSiteUrl)
+const generatedAt = new Date()
+const generatedAtIso = generatedAt.toISOString()
 
 type PageLink = {
   href: string
@@ -18,6 +20,24 @@ type PageLink = {
 
 type StaticDownloadRow = DownloadRow & {
   staticDetailHref: string
+}
+
+type StaticPageUrl = {
+  changefreq: 'daily' | 'weekly'
+  lastmod?: string
+  priority: number
+  url: string
+}
+
+type TopicKind = 'category' | 'platform' | 'product-family'
+
+type TopicPage = {
+  description: string
+  href: string
+  kind: TopicKind
+  label: string
+  rows: StaticDownloadRow[]
+  title: string
 }
 
 const staticColumns: Array<{
@@ -45,6 +65,10 @@ function normalizeSiteUrl(value: string | undefined) {
 
 function absoluteUrl(href: string) {
   return siteUrl ? `${siteUrl}${href}` : undefined
+}
+
+function jsonScript(value: unknown) {
+  return JSON.stringify(value).replaceAll('<', '\\u003c')
 }
 
 function escapeHtml(value: unknown) {
@@ -91,6 +115,14 @@ function formatDate(date: string) {
   })
 }
 
+function formatGeneratedDate() {
+  return generatedAt.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
 function slugPart(value: string) {
   return value
     .toLowerCase()
@@ -124,8 +156,36 @@ function descriptionForRow(row: DownloadRow) {
     .join(' - ')
 }
 
+function seoTitleForRow(row: DownloadRow) {
+  const parts = [
+    'NVIDIA',
+    row.productFamily || row.name,
+    row.productVersion,
+    row.platform,
+    row.platformVersion,
+    row.type || 'Driver',
+    'Download',
+  ].filter(Boolean)
+
+  return parts.join(' ')
+}
+
 function catalogHref(pageNumber: number) {
   return pageNumber <= 1 ? '/catalog/' : `/catalog/page/${pageNumber}/`
+}
+
+function topicHref(kind: TopicKind, slug: string, pageNumber = 1) {
+  const root = `/catalog/${kind}/${slug}/`
+
+  return pageNumber <= 1 ? root : `${root}page/${pageNumber}/`
+}
+
+function snapshotNotice(scope: string) {
+  return `<p>This ${scope} is a static snapshot generated from dump.json on ${formatGeneratedDate()}. For the newest data, live filtering, sorting, and CSV export, use the <a href="/">dynamic search app</a>.</p>`
+}
+
+function returnToCatalogueLink() {
+  return `<p><a href="/catalog/">Return to catalogue</a></p>`
 }
 
 function pageDocument({
@@ -133,31 +193,44 @@ function pageDocument({
   canonicalHref,
   description,
   extraHead = '',
+  jsonLd,
   title,
 }: {
   body: string
   canonicalHref: string
   description: string
   extraHead?: string
+  jsonLd?: unknown
   title: string
 }) {
   const canonicalUrl = absoluteUrl(canonicalHref)
+  const socialUrl = canonicalUrl ?? canonicalHref
+  const escapedTitle = escapeHtml(title)
+  const escapedDescription = escapeHtml(description)
 
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${escapeHtml(title)}</title>
-    <meta name="description" content="${escapeHtml(description)}">
+    <title>${escapedTitle}</title>
+    <meta name="description" content="${escapedDescription}">
+    <meta name="last-modified" content="${generatedAtIso}">
+    <meta property="og:title" content="${escapedTitle}">
+    <meta property="og:description" content="${escapedDescription}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${escapeHtml(socialUrl)}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="${escapedTitle}">
+    <meta name="twitter:description" content="${escapedDescription}">
     ${canonicalUrl ? `<link rel="canonical" href="${escapeHtml(canonicalUrl)}">` : ''}
     <link rel="contents" href="/catalog/">
     ${extraHead}
+    ${jsonLd ? `<script type="application/ld+json">${jsonScript(jsonLd)}</script>` : ''}
     <style>
       body { color: #1a1a1a; font: 14px/1.5 Arial, Helvetica, sans-serif; margin: 0; }
-      header, main, footer { margin: 0 auto; max-width: 1180px; padding: 24px; }
+      header, main { margin: 0 auto; max-width: 1180px; padding: 24px; }
       header { border-bottom: 1px solid #ddd; }
-      footer { border-top: 1px solid #ddd; color: #666; }
       a { color: #167000; }
       table { border-collapse: collapse; width: 100%; }
       th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
@@ -175,14 +248,14 @@ function pageDocument({
 `
 }
 
-function paginationNav(currentPage: number, pageCount: number) {
+function paginationNav(currentPage: number, pageCount: number, hrefForPage = catalogHref) {
   const links: PageLink[] = Array.from({ length: pageCount }, (_, index) => ({
-    href: catalogHref(index + 1),
+    href: hrefForPage(index + 1),
     label: String(index + 1),
   }))
 
-  const previous = currentPage > 1 ? `<a rel="prev" href="${catalogHref(currentPage - 1)}">Previous</a>` : ''
-  const next = currentPage < pageCount ? `<a rel="next" href="${catalogHref(currentPage + 1)}">Next</a>` : ''
+  const previous = currentPage > 1 ? `<a rel="prev" href="${hrefForPage(currentPage - 1)}">Previous</a>` : ''
+  const next = currentPage < pageCount ? `<a rel="next" href="${hrefForPage(currentPage + 1)}">Next</a>` : ''
   const pages = links
     .map((link) =>
       currentPage === Number(link.label)
@@ -198,10 +271,7 @@ function paginationNav(currentPage: number, pageCount: number) {
       </nav>`
 }
 
-function catalogPage(rows: StaticDownloadRow[], pageRows: StaticDownloadRow[], pageNumber: number, pageCount: number) {
-  const title = pageNumber === 1 ? 'NVIDIA GPU Driver Archive Catalogue' : `NVIDIA GPU Driver Archive Catalogue - Page ${pageNumber}`
-  const previousHead = pageNumber > 1 ? `<link rel="prev" href="${catalogHref(pageNumber - 1)}">` : ''
-  const nextHead = pageNumber < pageCount ? `<link rel="next" href="${catalogHref(pageNumber + 1)}">` : ''
+function rowsTable(pageRows: StaticDownloadRow[]) {
   const headerCells = staticColumns.map((column) => `<th scope="col">${escapeHtml(column.label)}</th>`).join('\n              ')
   const rowsHtml = pageRows
     .map((row) => {
@@ -224,15 +294,7 @@ function catalogPage(rows: StaticDownloadRow[], pageRows: StaticDownloadRow[], p
     })
     .join('\n')
 
-  return pageDocument({
-    body: `<header>
-      <p><a href="/">Dynamic download search</a></p>
-      <h1>NVIDIA GPU Driver Archive Catalogue</h1>
-      <p>${rows.length} downloads indexed. This static catalogue links to crawlable detail pages; the dynamic app remains available at the site root.</p>
-    </header>
-    <main>
-      ${paginationNav(pageNumber, pageCount)}
-      <table>
+  return `<table>
         <thead>
           <tr>
               ${headerCells}
@@ -241,16 +303,90 @@ function catalogPage(rows: StaticDownloadRow[], pageRows: StaticDownloadRow[], p
         <tbody>
           ${rowsHtml}
         </tbody>
-      </table>
+      </table>`
+}
+
+function topicSummaryLinks(topicPages: TopicPage[]) {
+  const topicKinds: Array<[TopicKind, string]> = [
+    ['category', 'Categories'],
+    ['product-family', 'Product Families'],
+    ['platform', 'Platforms'],
+  ]
+
+  return topicKinds
+    .map(([kind, heading]) => {
+      const links = topicPages
+        .filter((topic) => topic.kind === kind)
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .map((topic) => `<li><a href="${topic.href}">${escapeHtml(topic.label)}</a> (${topic.rows.length})</li>`)
+        .join('\n          ')
+
+      if (!links) {
+        return ''
+      }
+
+      return `<section>
+        <h2>${escapeHtml(heading)}</h2>
+        <ul>
+          ${links}
+        </ul>
+      </section>`
+    })
+    .join('\n')
+}
+
+function catalogPage(
+  rows: StaticDownloadRow[],
+  pageRows: StaticDownloadRow[],
+  pageNumber: number,
+  pageCount: number,
+  topicPages: TopicPage[],
+) {
+  const title = pageNumber === 1 ? 'NVIDIA GPU Driver Archive Catalogue' : `NVIDIA GPU Driver Archive Catalogue - Page ${pageNumber}`
+  const previousHead = pageNumber > 1 ? `<link rel="prev" href="${catalogHref(pageNumber - 1)}">` : ''
+  const nextHead = pageNumber < pageCount ? `<link rel="next" href="${catalogHref(pageNumber + 1)}">` : ''
+
+  return pageDocument({
+    body: `<header>
+      <h1>NVIDIA GPU Driver Archive Catalogue</h1>
+      <p>${rows.length} downloads indexed.</p>
+      ${snapshotNotice('catalogue')}
+    </header>
+    <main>
+      ${pageNumber === 1 ? topicSummaryLinks(topicPages) : ''}
       ${paginationNav(pageNumber, pageCount)}
-    </main>
-    <footer>
-      <a href="/">Return to dynamic search</a>
-    </footer>`,
+      ${rowsTable(pageRows)}
+      ${paginationNav(pageNumber, pageCount)}
+    </main>`,
     canonicalHref: catalogHref(pageNumber),
     description: `Static catalogue page ${pageNumber} of ${pageCount} for NVIDIA GPU driver archive downloads.`,
     extraHead: `${previousHead}${nextHead}`,
     title,
+  })
+}
+
+function topicPage(topic: TopicPage, pageRows: StaticDownloadRow[], pageNumber: number, pageCount: number) {
+  const slug = topic.href.split('/').filter(Boolean).at(-1) ?? ''
+  const hrefForPage = (page: number) => topicHref(topic.kind, slug, page)
+  const previousHead = pageNumber > 1 ? `<link rel="prev" href="${hrefForPage(pageNumber - 1)}">` : ''
+  const nextHead = pageNumber < pageCount ? `<link rel="next" href="${hrefForPage(pageNumber + 1)}">` : ''
+  const pageTitle = pageNumber === 1 ? topic.title : `${topic.title} - Page ${pageNumber}`
+  return pageDocument({
+    body: `<header>
+      ${returnToCatalogueLink()}
+      <h1>${escapeHtml(topic.title)}</h1>
+      <p>${escapeHtml(topic.description)}</p>
+      ${snapshotNotice(`${topic.label} catalogue page`)}
+    </header>
+    <main>
+      ${paginationNav(pageNumber, pageCount, hrefForPage)}
+      ${rowsTable(pageRows)}
+      ${paginationNav(pageNumber, pageCount, hrefForPage)}
+    </main>`,
+    canonicalHref: hrefForPage(pageNumber),
+    description: topic.description,
+    extraHead: `${previousHead}${nextHead}`,
+    title: pageTitle,
   })
 }
 
@@ -310,13 +446,33 @@ function zipContentSection(row: DownloadRow) {
     </section>`
 }
 
+function detailJsonLd(row: StaticDownloadRow) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    applicationCategory: row.category || undefined,
+    datePublished: row.releaseDate || undefined,
+    description: descriptionForRow(row),
+    downloadUrl: row.httpUrl || undefined,
+    fileSize: row.size ? formatBytes(row.size) : undefined,
+    identifier: row.downloadId || row.id,
+    name: titleForRow(row),
+    operatingSystem: [row.platform, row.platformVersion].filter(Boolean).join(' ') || undefined,
+    sameAs: row.archiveUrl || undefined,
+    softwareVersion: row.productVersion || undefined,
+    url: absoluteUrl(row.staticDetailHref) ?? row.staticDetailHref,
+  }
+}
+
 function detailPage(row: StaticDownloadRow) {
   const title = titleForRow(row)
+  const seoTitle = seoTitleForRow(row)
 
   return pageDocument({
     body: `<header>
-      <p><a href="/catalog/">Catalogue</a> / <a href="/">Dynamic download search</a></p>
+      ${returnToCatalogueLink()}
       <h1>${escapeHtml(title)}</h1>
+      ${snapshotNotice('download detail page')}
     </header>
     <main>
       <section>
@@ -337,13 +493,11 @@ function detailPage(row: StaticDownloadRow) {
       </section>
       ${checksumsTable(row)}
       ${zipContentSection(row)}
-    </main>
-    <footer>
-      <a href="/catalog/">Browse catalogue</a>
-    </footer>`,
+    </main>`,
     canonicalHref: row.staticDetailHref,
     description: descriptionForRow(row),
-    title: `${title} | NVIDIA GPU Driver Archive`,
+    jsonLd: detailJsonLd(row),
+    title: `${seoTitle} | NVIDIA GPU Driver Archive`,
   })
 }
 
@@ -373,30 +527,114 @@ async function writePage(href: string, html: string) {
   await writeFile(path.join(directory, 'index.html'), html)
 }
 
-async function writeSitemap(rows: StaticDownloadRow[], pageCount: number) {
+function groupRows(rows: StaticDownloadRow[], valueForRow: (row: StaticDownloadRow) => string[]) {
+  const groups = new Map<string, StaticDownloadRow[]>()
+
+  for (const row of rows) {
+    for (const value of valueForRow(row).map((item) => item.trim()).filter(Boolean)) {
+      const group = groups.get(value) ?? []
+
+      group.push(row)
+      groups.set(value, group)
+    }
+  }
+
+  return groups
+}
+
+function buildTopicPages(rows: StaticDownloadRow[]) {
+  const topicConfigs: Array<{
+    description: (value: string, count: number) => string
+    kind: TopicKind
+    title: (value: string) => string
+    values: (row: StaticDownloadRow) => string[]
+  }> = [
+    {
+      description: (value, count) => `${count} NVIDIA GPU archive downloads in the ${value} category.`,
+      kind: 'category',
+      title: (value) => `NVIDIA GPU ${value} Downloads`,
+      values: (row) => [row.category],
+    },
+    {
+      description: (value, count) => `${count} NVIDIA GPU archive downloads for ${value}.`,
+      kind: 'product-family',
+      title: (value) => `NVIDIA ${value} Downloads`,
+      values: (row) => row.productFamilies.length > 0 ? row.productFamilies : [row.productFamily],
+    },
+    {
+      description: (value, count) => `${count} NVIDIA GPU archive downloads for ${value}.`,
+      kind: 'platform',
+      title: (value) => `NVIDIA GPU Downloads for ${value}`,
+      values: (row) => [row.platform],
+    },
+  ]
+
+  return topicConfigs.flatMap((config) => {
+    return Array.from(groupRows(rows, config.values).entries()).map(([value, groupRowsForValue]) => {
+      const slug = slugPart(value)
+
+      return {
+        description: config.description(value, groupRowsForValue.length),
+        href: topicHref(config.kind, slug),
+        kind: config.kind,
+        label: value,
+        rows: groupRowsForValue,
+        title: config.title(value),
+      }
+    })
+  })
+}
+
+async function writeTopicPages(topicPages: TopicPage[]) {
+  const sitemapUrls: StaticPageUrl[] = []
+
+  for (const topic of topicPages) {
+    const slug = topic.href.split('/').filter(Boolean).at(-1) ?? ''
+    const pageCount = Math.max(1, Math.ceil(topic.rows.length / catalogPageSize))
+
+    for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
+      const start = (pageNumber - 1) * catalogPageSize
+      const href = topicHref(topic.kind, slug, pageNumber)
+
+      await writePage(href, topicPage(topic, topic.rows.slice(start, start + catalogPageSize), pageNumber, pageCount))
+      sitemapUrls.push({
+        changefreq: 'daily',
+        priority: pageNumber === 1 ? 0.75 : 0.65,
+        url: href,
+      })
+    }
+  }
+
+  return sitemapUrls
+}
+
+async function writeSitemap(urls: StaticPageUrl[]) {
   if (!siteUrl) {
     return
   }
 
   const sitemap = new SitemapStream({ hostname: siteUrl })
-  const links = [
-    { changefreq: 'daily', priority: 1, url: '/' },
-    { changefreq: 'daily', priority: 0.9, url: '/catalog/' },
-    ...Array.from({ length: pageCount - 1 }, (_, index) => ({
-      changefreq: 'daily',
-      priority: 0.8,
-      url: catalogHref(index + 2),
-    })),
-    ...rows.map((row) => ({
-      changefreq: 'weekly',
-      lastmod: row.releaseDate || undefined,
-      priority: 0.7,
-      url: row.staticDetailHref,
-    })),
-  ]
-
-  const sitemapXml = await streamToPromise(Readable.from(links).pipe(sitemap))
+  const sitemapXml = await streamToPromise(Readable.from(urls).pipe(sitemap))
   await writeFile(path.join(distDir, 'sitemap.xml'), sitemapXml)
+}
+
+async function writeNotFoundPage() {
+  await writeFile(
+    path.join(distDir, '404.html'),
+    pageDocument({
+      body: `<header>
+      ${returnToCatalogueLink()}
+      <h1>Page Not Found</h1>
+      <p>The requested archive page was not found.</p>
+    </header>
+    <main>
+      <p><a href="/catalog/">Browse the static download catalogue</a> or return to the <a href="/">dynamic search app</a>.</p>
+    </main>`,
+      canonicalHref: '/404.html',
+      description: 'Page not found. Browse the NVIDIA GPU Driver Archive catalogue or return to the dynamic search app.',
+      title: 'Page Not Found | NVIDIA GPU Driver Archive',
+    }),
+  )
 }
 
 async function writeRobots() {
@@ -450,23 +688,46 @@ async function main() {
       staticDetailHref: `/downloads/${detailSlug(row, usedSlugs)}/`,
     }))
   const pageCount = Math.max(1, Math.ceil(rows.length / catalogPageSize))
+  const topicPages = buildTopicPages(rows)
+  const sitemapUrls: StaticPageUrl[] = [
+    { changefreq: 'daily', priority: 1, url: '/' },
+  ]
 
   for (let pageNumber = 1; pageNumber <= pageCount; pageNumber += 1) {
     const start = (pageNumber - 1) * catalogPageSize
     const pageRows = rows.slice(start, start + catalogPageSize)
+    const href = catalogHref(pageNumber)
 
-    await writePage(catalogHref(pageNumber), catalogPage(rows, pageRows, pageNumber, pageCount))
+    await writePage(href, catalogPage(rows, pageRows, pageNumber, pageCount, topicPages))
+    sitemapUrls.push({
+      changefreq: 'daily',
+      priority: pageNumber === 1 ? 0.9 : 0.8,
+      url: href,
+    })
   }
+
+  const topicSitemapUrls = await writeTopicPages(topicPages)
+
+  sitemapUrls.push(...topicSitemapUrls)
 
   for (const row of rows) {
     await writePage(row.staticDetailHref, detailPage(row))
+    sitemapUrls.push({
+      changefreq: 'weekly',
+      lastmod: row.releaseDate || undefined,
+      priority: 0.7,
+      url: row.staticDetailHref,
+    })
   }
 
-  await writeSitemap(rows, pageCount)
+  await writeSitemap(sitemapUrls)
   await writeRobots()
+  await writeNotFoundPage()
   await injectCatalogLinkIntoAppIndex()
 
-  console.log(`Generated ${pageCount} catalogue pages and ${rows.length} download detail pages.`)
+  console.log(
+    `Generated ${pageCount} catalogue pages, ${topicPages.length} topic groups, and ${rows.length} download detail pages.`,
+  )
 }
 
 main().catch((error: unknown) => {
