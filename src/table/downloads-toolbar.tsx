@@ -1,7 +1,9 @@
-import type { RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Download,
   GitPullRequest,
+  Languages,
   RefreshCw,
   SlidersHorizontal,
   X,
@@ -9,12 +11,15 @@ import {
 import { ColumnVisibilityMenu } from "../ui/column-visibility-menu";
 import { FiltersPanel } from "../ui/filters-panel";
 import { Tooltip } from "../ui/tooltip";
+import { defaultLocale, locales, type Locale } from "../i18n/resources";
 import {
   type FilterChip,
   type FilterKey,
   type MultiFiltersState,
   type SearchScopeKey,
   type TextFilter,
+  filterConfigs,
+  textFilterConfigs,
 } from "./filters";
 import type { GridColumnOption } from "./grid-columns";
 
@@ -85,6 +90,49 @@ export function DownloadsToolbar({
   onSearchScopeSelect,
   onSetActiveFilterKey,
 }: DownloadsToolbarProps) {
+  const { i18n, t } = useTranslation();
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
+  const filterLabel = (key: FilterKey) =>
+    t(filterConfigs.find((config) => config.key === key)?.labelKey ?? "");
+  const textFilterLabel = (key: TextFilter["key"]) =>
+    t(textFilterConfigs.find((config) => config.key === key)?.labelKey ?? "");
+  const activeLocale = locales.includes(i18n.language as Locale)
+    ? (i18n.language as Locale)
+    : "en";
+  const changeLanguage = (locale: Locale) => {
+    if (locale === defaultLocale) {
+      window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+    } else {
+      window.location.hash = locale;
+    }
+
+    void i18n.changeLanguage(locale);
+    setLanguageMenuOpen(false);
+  };
+
+  useEffect(() => {
+    if (!languageMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const root = languageMenuRef.current;
+
+      if (!root || root.contains(event.target as Node)) {
+        return;
+      }
+
+      setLanguageMenuOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [languageMenuOpen]);
+
   return (
     <section aria-label="Toolbar" className="table-toolbar">
       <form
@@ -102,7 +150,7 @@ export function DownloadsToolbar({
           onCommitSearch();
         }}
       >
-        <Tooltip content="Open filters">
+        <Tooltip content={t("actions.openFilters")}>
           {(tooltipProps) => (
             <button
               {...tooltipProps}
@@ -137,7 +185,10 @@ export function DownloadsToolbar({
             onClick={() => onClearFilterKey(chip.key)}
             type="button"
           >
-            <span>{chip.label}</span>
+            <span>
+              {filterLabel(chip.key)}:{" "}
+              {chip.selectedValue || t("filters.valueCount", { count: chip.selectedCount })}
+            </span>
             <X aria-hidden="true" size={16} />
           </button>
         ))}
@@ -148,7 +199,7 @@ export function DownloadsToolbar({
             onClick={onClearGlobalSearch}
             type="button"
           >
-            <span>Global: {globalSearch}</span>
+            <span>{t("filters.global")}: {globalSearch}</span>
             <X aria-hidden="true" size={16} />
           </button>
         ) : null}
@@ -161,7 +212,7 @@ export function DownloadsToolbar({
             type="button"
           >
             <span>
-              {filter.label}: {filter.value}
+              {textFilterLabel(filter.key)}: {filter.value}
             </span>
             <X aria-hidden="true" size={16} />
           </button>
@@ -172,15 +223,15 @@ export function DownloadsToolbar({
           onChange={(event) => onSearchInputChange(event.target.value)}
           placeholder={
             searchScope === "global"
-              ? "Search"
-              : `Filter by ${searchScopeLabel}`
+              ? t("filters.search")
+              : t("filters.searchBy", { field: searchScopeLabel })
           }
           type="search"
           value={searchInput}
         />
 
         {hasClearableSearch ? (
-          <Tooltip content="Clear filters">
+          <Tooltip content={t("filters.clearFilters")}>
             {(tooltipProps) => (
               <button
                 {...tooltipProps}
@@ -196,7 +247,7 @@ export function DownloadsToolbar({
       </form>
 
       <div className="toolbar-actions">
-        <Tooltip content="Refresh data">
+        <Tooltip content={t("actions.refreshData")}>
           {(tooltipProps) => (
             <button
               {...tooltipProps}
@@ -206,12 +257,12 @@ export function DownloadsToolbar({
               type="button"
             >
               <RefreshCw aria-hidden="true" size={16} />
-              <span>Reload</span>
+              <span>{t("actions.reload")}</span>
             </button>
           )}
         </Tooltip>
 
-        <Tooltip content="Export CSV">
+        <Tooltip content={t("actions.exportCsv")}>
           {(tooltipProps) => (
             <button
               {...tooltipProps}
@@ -220,7 +271,7 @@ export function DownloadsToolbar({
               type="button"
             >
               <Download aria-hidden="true" size={16} />
-              <span>Export CSV</span>
+              <span>{t("actions.exportCsv")}</span>
             </button>
           )}
         </Tooltip>
@@ -234,7 +285,39 @@ export function DownloadsToolbar({
           visibleColumns={visibleColumns}
         />
 
-        <Tooltip content="Open GitHub repo">
+        <div className="toolbar-language" ref={languageMenuRef}>
+          <Tooltip content={t("actions.language")}>
+            {(tooltipProps) => (
+              <button
+                {...tooltipProps}
+                aria-expanded={languageMenuOpen}
+                className="icon-button"
+                onClick={() => setLanguageMenuOpen((open) => !open)}
+                type="button"
+              >
+                <Languages aria-hidden="true" size={20} />
+              </button>
+            )}
+          </Tooltip>
+
+          {languageMenuOpen ? (
+            <div className="toolbar-language__menu" role="menu">
+              {locales.map((locale) => (
+                <button
+                  aria-current={locale === activeLocale ? "true" : undefined}
+                  className="toolbar-language__item"
+                  key={locale}
+                  onClick={() => changeLanguage(locale)}
+                  type="button"
+                >
+                  {t(`localeNames.${locale}`)}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <Tooltip content={t("actions.openGithubRepo")}>
           {(tooltipProps) => (
             <a
               {...tooltipProps}
@@ -244,7 +327,7 @@ export function DownloadsToolbar({
               target="_blank"
             >
               <GitPullRequest aria-hidden="true" size={16} />
-              <span>GitHub</span>
+              <span>{t("actions.github")}</span>
             </a>
           )}
         </Tooltip>

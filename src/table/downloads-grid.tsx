@@ -1,5 +1,6 @@
 import type { ColDef, DoesExternalFilterPass, GridReadyEvent, IsExternalFilterPresent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 
 type DownloadsGridProps = {
@@ -27,8 +28,9 @@ export function DownloadsGrid({
   onGridReady,
   rows,
 }: DownloadsGridProps) {
+  const { i18n, t } = useTranslation()
   const lastUpdatedLabel = lastUpdatedAt
-    ? new Intl.DateTimeFormat(undefined, {
+    ? new Intl.DateTimeFormat(i18n.language, {
         dateStyle: 'medium',
         timeStyle: 'short',
       }).format(new Date(lastUpdatedAt))
@@ -47,7 +49,14 @@ export function DownloadsGrid({
         doesExternalFilterPass={doesExternalFilterPass}
         isExternalFilterPresent={isExternalFilterPresent}
         localeText={{
-          pageSizeSelectorLabel: 'Show',
+          firstPage: t('table.firstPage'),
+          lastPage: t('table.lastPage'),
+          nextPage: t('table.nextPage'),
+          of: t('table.of'),
+          page: t('table.page'),
+          pageSizeSelectorLabel: t('table.pageSizeSelectorLabel'),
+          previousPage: t('table.previousPage'),
+          to: t('table.to'),
         }}
         onGridReady={onGridReady}
         pagination
@@ -67,7 +76,7 @@ export function DownloadsGrid({
         tooltipTrigger="hover"
       />
       {lastUpdatedLabel ? (
-        <p className="downloads-grid__last-updated">Last updated on {lastUpdatedLabel}</p>
+        <p className="downloads-grid__last-updated">{t('table.lastUpdated', { date: lastUpdatedLabel })}</p>
       ) : null}
     </section>
   )

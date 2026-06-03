@@ -16,9 +16,11 @@
     "@floating-ui/react": "^0.27.19",
     "ag-grid-community": "^35.3.0",
     "ag-grid-react": "^35.3.0",
+    "i18next": "^26.3.0",
     "lucide-react": "^1.17.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-i18next": "^17.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

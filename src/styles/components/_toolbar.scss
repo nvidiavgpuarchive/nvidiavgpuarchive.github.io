@@ -18,6 +18,45 @@
   margin-left: auto;
 }
 
+.toolbar-language {
+  position: relative;
+}
+
+.toolbar-language__menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 90;
+  min-width: 132px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--menu-radius);
+  background: #fff;
+  box-shadow: var(--shadow-menu);
+}
+
+.toolbar-language__item {
+  appearance: none;
+  width: 100%;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  background: #fff;
+  color: var(--text);
+  font: 700 var(--font-sm) / 1 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-current='true'] {
+    background: #f4f4f4;
+  }
+
+  &[aria-current='true'] {
+    color: var(--nv-green-dark);
+  }
+}
+
 .table-toolbar .icon-button {
   width: 30px;
   height: 30px;

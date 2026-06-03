@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { LoadProgress } from '../data/load-dump'
 
 type LoadingDialogProps = {
@@ -18,28 +19,35 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
 }
 
-const progressLabel = (progress: LoadProgress) => {
+const progressLabel = (progress: LoadProgress, t: (key: string, options?: Record<string, string>) => string) => {
   if (progress.phase === 'metadata') {
-    return 'Loading dump.json...'
+    return t('loading.loadingDump')
   }
 
   if (progress.phase === 'requesting') {
-    return 'Requesting dump.json...'
+    return t('loading.requestingDump')
   }
 
   if (progress.phase === 'parsing') {
-    return 'Parsing dump.json...'
+    return t('loading.parsingDump')
   }
 
   if (progress.total) {
-    return `Loading dump.json... ${formatBytes(progress.loaded)} of ${formatBytes(progress.total)}`
+    return t('loading.loadingDumpBytes', {
+      loaded: formatBytes(progress.loaded),
+      total: formatBytes(progress.total),
+    })
   }
 
-  return `Loading dump.json... ${formatBytes(progress.loaded)}`
+  return t('loading.loadingDumpLoaded', {
+    loaded: formatBytes(progress.loaded),
+  })
 }
 
 export function LoadingDialog({ onDismiss, progress }: LoadingDialogProps) {
+  const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const label = progressLabel(progress, t)
   const percentage = progress.total
     ? Math.min(100, Math.round((progress.loaded / progress.total) * 100))
     : undefined
@@ -76,14 +84,14 @@ export function LoadingDialog({ onDismiss, progress }: LoadingDialogProps) {
       ref={dialogRef}
     >
       <article>
-        <h2 id="loading-title">Loading Data</h2>
+        <h2 id="loading-title">{t('loading.dataTitle')}</h2>
         <div className="loading-dialog__meta">
-          <p>{progressLabel(progress)}</p>
+          <p>{label}</p>
           {percentage === undefined ? null : <span>{percentage}%</span>}
         </div>
         {percentage === undefined ? (
           <div
-            aria-label={progressLabel(progress)}
+            aria-label={label}
             className="loading-dialog__progress loading-dialog__progress--indeterminate"
             role="progressbar"
           >

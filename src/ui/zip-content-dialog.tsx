@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 import { Tooltip } from './tooltip'
 
@@ -9,6 +10,7 @@ type ZipContentDialogProps = {
 }
 
 export function ZipContentDialog({ row, onClose }: ZipContentDialogProps) {
+  const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -44,8 +46,8 @@ export function ZipContentDialog({ row, onClose }: ZipContentDialogProps) {
     >
       <article className="details-panel details-panel--compact">
         <header className="details-header">
-          <h2 id="zip-content-title">Zip Content</h2>
-          <Tooltip content="Close zip content">
+          <h2 id="zip-content-title">{t('actions.zipContent')}</h2>
+          <Tooltip content={t('actions.closeZipContent')}>
             {(tooltipProps) => (
               <button {...tooltipProps} className="dialog-close" onClick={onClose} type="button">
                 <X aria-hidden="true" size={30} />

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   filterConfigs,
   textFilterConfigs,
@@ -11,22 +12,22 @@ import {
 const menuFields: Array<{
   filterKey?: FilterKey
   searchKey?: SearchScopeKey
-  label: string
+  labelKey: string
 }> = [
-  { label: 'All fields', searchKey: 'global' },
-  { filterKey: 'category', label: 'Category' },
+  { labelKey: 'filters.allFields', searchKey: 'global' },
+  { filterKey: 'category', labelKey: 'table.columns.category' },
   ...textFilterConfigs
     .filter((config) => config.key === 'description' || config.key === 'name')
     .map((config) => ({
-      label: config.label,
+      labelKey: config.labelKey,
       searchKey: config.key,
     })),
-  { label: 'Platform', searchKey: 'platform' },
-  { label: 'Platform Version', searchKey: 'platformVersion' },
-  { filterKey: 'productFamilies', label: 'Product Family' },
-  { label: 'Product Version', searchKey: 'productVersion' },
-  { label: 'Release Date', searchKey: 'releaseDate' },
-  { filterKey: 'linkType', label: 'Type' },
+  { labelKey: 'table.columns.platform', searchKey: 'platform' },
+  { labelKey: 'table.columns.platformVersion', searchKey: 'platformVersion' },
+  { filterKey: 'productFamilies', labelKey: 'table.columns.productFamily' },
+  { labelKey: 'table.columns.productVersion', searchKey: 'productVersion' },
+  { labelKey: 'table.columns.releaseDate', searchKey: 'releaseDate' },
+  { filterKey: 'linkType', labelKey: 'table.columns.type' },
 ]
 
 type FiltersPanelProps = {
@@ -50,6 +51,7 @@ export function FiltersPanel({
   onHoverField,
   onSelectSearchScope,
 }: FiltersPanelProps) {
+  const { t } = useTranslation()
   const activeConfig = filterConfigs.find((config) => config.key === activeFilterKey)
   const activeFieldIndex = activeConfig
     ? Math.max(0, menuFields.findIndex((field) => field.filterKey === activeConfig.key))
@@ -68,12 +70,12 @@ export function FiltersPanel({
             <button
               className={[
                 'filter-menu__field',
-                field.label === 'All fields' ? 'filter-menu__field--global' : '',
+                field.searchKey === 'global' ? 'filter-menu__field--global' : '',
                 active ? 'filter-menu__field--active' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
-              key={field.label}
+              key={field.labelKey}
               onClick={() => {
                 if (field.searchKey) {
                   onSelectSearchScope(field.searchKey)
@@ -84,7 +86,7 @@ export function FiltersPanel({
               onMouseEnter={() => onHoverField(field.filterKey ?? null)}
               type="button"
             >
-              <span>{field.label}</span>
+              <span>{t(field.labelKey)}</span>
               {field.filterKey ? <span aria-hidden="true">›</span> : null}
             </button>
           )

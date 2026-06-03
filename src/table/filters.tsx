@@ -11,12 +11,12 @@ export type TextFilterKey =
 export type SearchScopeKey = 'global' | TextFilterKey
 export type TextFilter = {
   key: TextFilterKey
-  label: string
   value: string
 }
 export type FilterChip = {
   key: FilterKey
-  label: string
+  selectedCount: number
+  selectedValue: string
 }
 
 export type MultiFiltersState = Record<FilterKey, string[]>
@@ -31,6 +31,7 @@ export type TableFilterModel = {
 type FilterConfig = {
   key: FilterKey
   label: string
+  labelKey: string
   getValues: (row: DownloadRow) => string[]
 }
 
@@ -38,16 +39,19 @@ export const filterConfigs: FilterConfig[] = [
   {
     key: 'category',
     label: 'Category',
+    labelKey: 'table.columns.category',
     getValues: (row) => [row.category],
   },
   {
     key: 'productFamilies',
     label: 'Product Family',
+    labelKey: 'table.columns.productFamily',
     getValues: (row) => row.productFamilies,
   },
   {
     key: 'linkType',
     label: 'Type',
+    labelKey: 'table.columns.type',
     getValues: (row) => [row.linkType],
   },
 ]
@@ -55,36 +59,43 @@ export const filterConfigs: FilterConfig[] = [
 export const textFilterConfigs: Array<{
   key: TextFilterKey
   label: string
+  labelKey: string
   getValue: (row: DownloadRow) => string
 }> = [
   {
     key: 'description',
     label: 'Description',
+    labelKey: 'table.columns.description',
     getValue: (row) => row.description,
   },
   {
     key: 'name',
     label: 'Name',
+    labelKey: 'table.columns.name',
     getValue: (row) => row.name,
   },
   {
     key: 'platform',
     label: 'Platform',
+    labelKey: 'table.columns.platform',
     getValue: (row) => row.platform,
   },
   {
     key: 'platformVersion',
     label: 'Platform Version',
+    labelKey: 'table.columns.platformVersion',
     getValue: (row) => row.platformVersion,
   },
   {
     key: 'productVersion',
     label: 'Product Version',
+    labelKey: 'table.columns.productVersion',
     getValue: (row) => row.productVersion,
   },
   {
     key: 'releaseDate',
     label: 'Release Date',
+    labelKey: 'table.columns.releaseDate',
     getValue: (row) => row.releaseDate,
   },
 ]
@@ -124,7 +135,8 @@ export const buildFilterChips = (filters: MultiFiltersState): FilterChip[] => {
     return [
       {
         key: config.key,
-        label: `${config.label}: ${selected.length === 1 ? selected[0] : `${selected.length} value(s)`}`,
+        selectedCount: selected.length,
+        selectedValue: selected.length === 1 ? selected[0] : '',
       },
     ]
   })
@@ -259,7 +271,6 @@ export const appendTextFilter = (
   filters: TextFilter[],
   config: {
     key: TextFilterKey
-    label: string
   },
   value: string,
 ) => {
@@ -270,7 +281,6 @@ export const appendTextFilter = (
       ...filters,
       {
         key: config.key,
-        label: config.label,
         value,
       },
     ]

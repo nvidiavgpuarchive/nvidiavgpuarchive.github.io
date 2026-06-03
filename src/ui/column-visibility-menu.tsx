@@ -1,5 +1,6 @@
 import { Columns3 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { GridColumnOption } from '../table/grid-columns'
 import { Tooltip } from './tooltip'
 
@@ -20,6 +21,7 @@ export function ColumnVisibilityMenu({
   onToggle,
   onVisibilityChange,
 }: ColumnVisibilityMenuProps) {
+  const { t } = useTranslation()
   const rootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,11 +48,11 @@ export function ColumnVisibilityMenu({
 
   return (
     <div className="column-menu-root" ref={rootRef}>
-      <Tooltip content="Toggle columns">
+      <Tooltip content={t('actions.toggleColumns')}>
         {(tooltipProps) => (
           <button {...tooltipProps} className="icon-button" onClick={onToggle} type="button">
             <Columns3 aria-hidden="true" size={24} />
-            <span>Columns</span>
+            <span>{t('actions.columns')}</span>
           </button>
         )}
       </Tooltip>

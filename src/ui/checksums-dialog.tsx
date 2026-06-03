@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 import { Tooltip } from './tooltip'
 
@@ -26,6 +27,7 @@ const copyText = async (value: string) => {
 }
 
 export function ChecksumsDialog({ row, onClose }: ChecksumsDialogProps) {
+  const { t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
 
@@ -77,8 +79,8 @@ export function ChecksumsDialog({ row, onClose }: ChecksumsDialogProps) {
     >
       <article className="details-panel details-panel--compact">
         <header className="details-header">
-          <h2 id="checksums-title">Checksums</h2>
-          <Tooltip content="Close checksums">
+          <h2 id="checksums-title">{t('actions.checksums')}</h2>
+          <Tooltip content={t('actions.closeChecksums')}>
             {(tooltipProps) => (
               <button {...tooltipProps} className="dialog-close" onClick={onClose} type="button">
                 <X aria-hidden="true" size={30} />
@@ -106,7 +108,7 @@ export function ChecksumsDialog({ row, onClose }: ChecksumsDialogProps) {
                         type="button"
                       >
                         <code>{checksum.value}</code>
-                        <span>{copiedFormat === checksum.format ? 'Copied' : 'Copy'}</span>
+                        <span>{copiedFormat === checksum.format ? t('actions.copied') : t('actions.copy')}</span>
                       </button>
                     </td>
                   </tr>
@@ -114,7 +116,7 @@ export function ChecksumsDialog({ row, onClose }: ChecksumsDialogProps) {
               </tbody>
             </table>
           ) : (
-            <p>No checksums listed.</p>
+            <p>{t('checksums.none')}</p>
           )}
         </section>
       </article>

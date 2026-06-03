@@ -12,6 +12,7 @@ import {
 } from '@floating-ui/react'
 import { EllipsisVertical } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 import { Tooltip } from './tooltip'
 
@@ -23,6 +24,7 @@ type DownloadActionsProps = {
 }
 
 export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const { context, floatingStyles, refs } = useFloating({
     middleware: [offset(4), flip(), shift({ padding: 8 })],
@@ -41,7 +43,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
 
   return (
     <div className="grid-actions">
-      <Tooltip content="More actions">
+      <Tooltip content={t('actions.moreActions')}>
         {(tooltipProps) => (
           <button
             {...tooltipProps}
@@ -63,7 +65,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
         )}
       </Tooltip>
 
-      <Tooltip content="Download HTTP archive">
+      <Tooltip content={t('actions.downloadHttpArchive')}>
         {(tooltipProps) => (
           <a
             {...tooltipProps}
@@ -73,7 +75,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
             rel="noreferrer"
             target="_blank"
           >
-            Download
+            {t('actions.download')}
           </a>
         )}
       </Tooltip>
@@ -96,7 +98,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
               }}
               type="button"
             >
-              Details
+              {t('actions.details')}
             </button>
             <button
               className="grid-action-menu__item"
@@ -107,7 +109,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
               }}
               type="button"
             >
-              Checksums
+              {t('actions.checksums')}
             </button>
             {row.zipContent.length > 0 ? (
               <button
@@ -119,7 +121,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
                 }}
                 type="button"
               >
-                Zip Content
+                {t('actions.zipContent')}
               </button>
             ) : null}
             <a
@@ -132,7 +134,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
               rel="noreferrer"
               target="_blank"
             >
-              Download Torrent
+              {t('actions.downloadTorrent')}
             </a>
             <a
               className="grid-action-menu__item"
@@ -144,7 +146,7 @@ export function DownloadActions({ row, onOpenPanel }: DownloadActionsProps) {
               rel="noreferrer"
               target="_blank"
             >
-              Internet Archive
+              {t('actions.internetArchive')}
             </a>
           </div>
         </FloatingPortal>

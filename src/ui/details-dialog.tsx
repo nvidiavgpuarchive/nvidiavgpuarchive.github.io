@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 import { Tooltip } from './tooltip'
 
@@ -20,7 +21,7 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
 }
 
-const textValue = (value: unknown, fallback = 'N/A') => {
+const textValue = (value: unknown, fallback: string) => {
   if (typeof value === 'string' && value) {
     return value
   }
@@ -32,9 +33,9 @@ const textValue = (value: unknown, fallback = 'N/A') => {
   return fallback
 }
 
-const formatReleaseDate = (date: string) => {
+const formatReleaseDate = (date: string, locale: string, fallback: string) => {
   if (!date) {
-    return 'N/A'
+    return fallback
   }
 
   const parsed = new Date(`${date}T00:00:00`)
@@ -43,7 +44,7 @@ const formatReleaseDate = (date: string) => {
     return date
   }
 
-  return parsed.toLocaleDateString('en-US', {
+  return parsed.toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -51,7 +52,9 @@ const formatReleaseDate = (date: string) => {
 }
 
 export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
+  const { i18n, t } = useTranslation()
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const na = t('common.na')
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -86,8 +89,8 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
     >
       <article className="details-panel">
         <header className="details-header">
-          <h2 id="details-title">Download Details</h2>
-          <Tooltip content="Close details">
+          <h2 id="details-title">{t('details.title')}</h2>
+          <Tooltip content={t('actions.closeDetails')}>
             {(tooltipProps) => (
               <button {...tooltipProps} className="dialog-close" onClick={onClose} type="button">
                 <X aria-hidden="true" size={30} />
@@ -96,82 +99,82 @@ export function DetailsDialog({ row, onClose }: DetailsDialogProps) {
           </Tooltip>
         </header>
 
-        <section className="details-summary" aria-label="Download metadata">
+        <section className="details-summary" aria-label={t('details.downloadMetadata')}>
           <div className="details-primary">
             <div className="detail-field detail-field-wide">
-              <span>Description:</span>
-              <strong>{row.description || row.filename || 'N/A'}</strong>
+              <span>{t('details.description')}:</span>
+              <strong>{row.description || row.filename || na}</strong>
             </div>
             <div className="detail-field detail-field-wide">
-              <span>Download ID:</span>
-              <strong>{row.downloadId || 'N/A'}</strong>
+              <span>{t('details.downloadId')}:</span>
+              <strong>{row.downloadId || na}</strong>
             </div>
             <div className="detail-field detail-field-wide">
-              <span>Name:</span>
-              <strong>{textValue(row.meta.name)}</strong>
+              <span>{t('details.name')}:</span>
+              <strong>{textValue(row.meta.name, na)}</strong>
             </div>
             <div className="detail-field detail-field-wide">
-              <span>File Name:</span>
-              <strong>{row.filename || 'No Title'}</strong>
+              <span>{t('details.fileName')}:</span>
+              <strong>{row.filename || t('common.noTitle')}</strong>
             </div>
             <div className="details-pair">
               <div className="detail-field">
-                <span>Product Name:</span>
-                <strong>{textValue(row.meta.productName)}</strong>
+                <span>{t('details.productName')}:</span>
+                <strong>{textValue(row.meta.productName, na)}</strong>
               </div>
               <div className="detail-field">
-                <span>File Size:</span>
-                <strong>{formatBytes(row.size) || 'N/A'}</strong>
-              </div>
-            </div>
-            <div className="details-pair">
-              <div className="detail-field">
-                <span>Version:</span>
-                <strong>{row.productVersion || 'N/A'}</strong>
-              </div>
-              <div className="detail-field">
-                <span>Platform Name:</span>
-                <strong>{row.platform || 'N/A'}</strong>
+                <span>{t('details.fileSize')}:</span>
+                <strong>{formatBytes(row.size) || na}</strong>
               </div>
             </div>
             <div className="details-pair">
               <div className="detail-field">
-                <span>Platform Version:</span>
-                <strong>{row.platformVersion || 'N/A'}</strong>
+                <span>{t('details.version')}:</span>
+                <strong>{row.productVersion || na}</strong>
               </div>
               <div className="detail-field">
-                <span>ProductFamilies:</span>
-                <strong>{row.productFamily || 'N/A'}</strong>
+                <span>{t('details.platformName')}:</span>
+                <strong>{row.platform || na}</strong>
+              </div>
+            </div>
+            <div className="details-pair">
+              <div className="detail-field">
+                <span>{t('details.platformVersion')}:</span>
+                <strong>{row.platformVersion || na}</strong>
+              </div>
+              <div className="detail-field">
+                <span>{t('details.productFamilies')}:</span>
+                <strong>{row.productFamily || na}</strong>
               </div>
             </div>
             {'nondrivercategory' in row.meta ? (
               <div className="detail-field detail-inline">
-                <span>NonDriverCategory:</span>
-                <strong>{textValue(row.meta.nondrivercategory)}</strong>
+                <span>{t('details.nonDriverCategory')}:</span>
+                <strong>{textValue(row.meta.nondrivercategory, na)}</strong>
               </div>
             ) : null}
             <div className="detail-field detail-inline">
-              <span>ChecksumFormat:</span>
-              <strong>{textValue(row.meta.checksumFormat)}</strong>
+              <span>{t('details.checksumFormat')}:</span>
+              <strong>{textValue(row.meta.checksumFormat, na)}</strong>
             </div>
           </div>
 
           <aside className="details-side">
             <div className="detail-field">
-              <span>Release Date:</span>
-              <strong>{formatReleaseDate(row.releaseDate)}</strong>
+              <span>{t('details.releaseDate')}:</span>
+              <strong>{formatReleaseDate(row.releaseDate, i18n.language, na)}</strong>
             </div>
             <div className="detail-field">
-              <span>Category:</span>
-              <strong>{row.category || 'N/A'}</strong>
+              <span>{t('details.category')}:</span>
+              <strong>{row.category || na}</strong>
             </div>
             <div className="detail-field">
-              <span>Link Type:</span>
-              <strong>{row.linkType || 'N/A'}</strong>
+              <span>{t('details.linkType')}:</span>
+              <strong>{row.linkType || na}</strong>
             </div>
             <div className="detail-field">
-              <span>Download Type:</span>
-              <strong>{row.downloadType || 'N/A'}</strong>
+              <span>{t('details.downloadType')}:</span>
+              <strong>{row.downloadType || na}</strong>
             </div>
           </aside>
         </section>

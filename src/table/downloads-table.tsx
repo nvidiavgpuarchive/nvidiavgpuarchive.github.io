@@ -1,5 +1,6 @@
 import type { DoesExternalFilterPass, GridApi, GridReadyEvent, IsExternalFilterPresent } from 'ag-grid-community'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DownloadRow } from '../data/types'
 import { ChecksumsDialog } from '../ui/checksums-dialog'
 import { DetailsDialog } from '../ui/details-dialog'
@@ -83,6 +84,7 @@ const formatCsvReleaseDate = (date: string) => {
 }
 
 export function DownloadsTable({ rows, loading, lastUpdatedAt, onReload }: DownloadsTableProps) {
+  const { i18n, t } = useTranslation()
   const gridApiRef = useRef<GridApi<DownloadRow> | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [globalSearch, setGlobalSearch] = useState('')
@@ -99,7 +101,15 @@ export function DownloadsTable({ rows, loading, lastUpdatedAt, onReload }: Downl
   const openActionPanel = useCallback((row: DownloadRow, panel: DownloadActionPanel) => {
     setActiveDialog({ panel, row })
   }, [])
-  const columnDefs = useMemo(() => createGridColumns(openActionPanel), [openActionPanel])
+  const columnDefs = useMemo(() => createGridColumns(openActionPanel, t, i18n.language), [i18n.language, openActionPanel, t])
+  const columnOptions = useMemo(
+    () =>
+      gridColumnOptions.map((column) => ({
+        ...column,
+        label: t(column.labelKey),
+      })),
+    [t],
+  )
   const filterOptions = useMemo(() => buildFilterOptions(rows), [rows])
   const tableFilterModel = useMemo<TableFilterModel>(
     () => ({
@@ -118,8 +128,8 @@ export function DownloadsTable({ rows, loading, lastUpdatedAt, onReload }: Downl
   const hasClearableSearch = hasActiveFilters || searchInput !== ''
   const searchScopeLabel =
     searchScope === 'global'
-      ? 'Global'
-      : textFilterConfigs.find((config) => config.key === searchScope)?.label ?? 'Global'
+      ? t('filters.global')
+      : t(textFilterConfigs.find((config) => config.key === searchScope)?.labelKey ?? 'filters.global')
 
   const clearFilters = () => {
     setSearchInput('')
@@ -274,7 +284,7 @@ export function DownloadsTable({ rows, loading, lastUpdatedAt, onReload }: Downl
         activeFilterChips={activeFilterChips}
         activeFilterKey={activeFilterKey}
         columnMenuOpen={columnMenuOpen}
-        columnOptions={gridColumnOptions}
+        columnOptions={columnOptions}
         filterMenuOpen={filterMenuOpen}
         filterOptions={filterOptions}
         filters={filters}

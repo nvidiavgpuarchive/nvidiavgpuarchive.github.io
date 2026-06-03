@@ -182,12 +182,6 @@
       flex: 0 0 auto;
       min-width: 72px;
     }
-
-    &::after {
-      content: 'Items';
-      display: inline-block;
-      line-height: 32px;
-    }
   }
 
   .ag-paging-row-summary-panel {
