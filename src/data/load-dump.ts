@@ -20,6 +20,7 @@ type DumpCacheMeta = {
 const textDecoder = new TextDecoder()
 const textEncoder = new TextEncoder()
 const dumpCacheName = 'nvidia-dump-cache-v1'
+const dumpIndexTimestampKey = 'nvidia-dump-index-timestmp'
 const defaultDumpCacheTtlMs = 30 * 24 * 60 * 60 * 1000
 
 export const defaultDumpUrl =
@@ -30,6 +31,10 @@ export const defaultDumpMetadataUrl =
   import.meta.env.VITE_DUMP_METADATA_URL ||
   'https://api.github.com/repos/nvidiavgpuarchive/index/contents/dump.json?ref=main'
 
+export const defaultDumpIndexTimestampUrl =
+  import.meta.env.VITE_DUMP_INDEX_TIMESTAMP_URL ||
+  'https://raw.githubusercontent.com/nvidiavgpuarchive/index/refs/heads/main/.docgen'
+
 const cacheBustedUrl = (url: string) => {
   const requestUrl = new URL(url, window.location.href)
 
@@ -38,20 +43,25 @@ const cacheBustedUrl = (url: string) => {
   return requestUrl.toString()
 }
 
-const dumpCacheMetaKey = (url: string) => `nvidia-dump-cache-meta:${url}`
-const dumpNetworkFetchKey = (url: string) => `nvidia-dump-network-fetched-at:${url}`
+const dumpCacheMetaKey = 'nvidia-dump-cache-meta'
 
 const dumpCacheAvailable = () => 'caches' in window && 'localStorage' in window
 
 const localStorageAvailable = () => 'localStorage' in window
 
-export const readDumpNetworkFetchTimestamp = (url: string) => {
+export const shouldRefreshDumpForBuild = (buildTimestamp: number) => {
+  const cachedAt = readDumpCacheTimestamp()
+
+  return !cachedAt || buildTimestamp > cachedAt
+}
+
+export const readDumpIndexTimestamp = () => {
   if (!localStorageAvailable()) {
     return undefined
   }
 
   try {
-    const value = Number(window.localStorage.getItem(dumpNetworkFetchKey(url)))
+    const value = Number(window.localStorage.getItem(dumpIndexTimestampKey))
 
     return Number.isFinite(value) && value > 0 ? value : undefined
   } catch {
@@ -59,27 +69,21 @@ export const readDumpNetworkFetchTimestamp = (url: string) => {
   }
 }
 
-const writeDumpNetworkFetchTimestamp = (url: string, fetchedAt = Date.now()) => {
-  if (!localStorageAvailable()) {
+const writeDumpIndexTimestamp = (timestamp: number | undefined) => {
+  if (!timestamp || !localStorageAvailable()) {
     return
   }
 
   try {
-    window.localStorage.setItem(dumpNetworkFetchKey(url), String(fetchedAt))
+    window.localStorage.setItem(dumpIndexTimestampKey, String(timestamp))
   } catch {
-    // The timestamp only controls cache freshness across app builds.
+    // The index timestamp only avoids unnecessary large dump downloads.
   }
 }
 
-export const shouldRefreshDumpForBuild = (url: string, buildTimestamp: number) => {
-  const lastNetworkFetchAt = readDumpNetworkFetchTimestamp(url)
-
-  return !lastNetworkFetchAt || buildTimestamp > lastNetworkFetchAt
-}
-
-const readDumpCacheMeta = (url: string) => {
+const readDumpCacheMeta = () => {
   try {
-    const value = window.localStorage.getItem(dumpCacheMetaKey(url))
+    const value = window.localStorage.getItem(dumpCacheMetaKey)
 
     return value ? (JSON.parse(value) as DumpCacheMeta) : undefined
   } catch {
@@ -87,12 +91,27 @@ const readDumpCacheMeta = (url: string) => {
   }
 }
 
-const writeDumpCacheMeta = (url: string, meta: DumpCacheMeta) => {
+const writeDumpCacheMeta = (meta: DumpCacheMeta) => {
   try {
-    window.localStorage.setItem(dumpCacheMetaKey(url), JSON.stringify(meta))
+    window.localStorage.setItem(dumpCacheMetaKey, JSON.stringify(meta))
   } catch {
     // Cache metadata is an optimization; loading should still work without it.
   }
+}
+
+export const readDumpCacheTimestamp = () => readDumpCacheMeta()?.cachedAt
+
+const touchDumpCacheMeta = () => {
+  const meta = readDumpCacheMeta()
+
+  if (!meta) {
+    return
+  }
+
+  writeDumpCacheMeta({
+    ...meta,
+    cachedAt: Date.now(),
+  })
 }
 
 const deleteCachedDump = async (url: string) => {
@@ -101,7 +120,7 @@ const deleteCachedDump = async (url: string) => {
   }
 
   try {
-    window.localStorage.removeItem(dumpCacheMetaKey(url))
+    window.localStorage.removeItem(dumpCacheMetaKey)
     const cache = await window.caches.open(dumpCacheName)
     await cache.delete(url)
   } catch {
@@ -109,14 +128,14 @@ const deleteCachedDump = async (url: string) => {
   }
 }
 
-const readCachedDump = async (url: string, ttlMs: number) => {
+const readCachedDump = async (url: string, ttlMs: number, options: { ignoreTtl?: boolean } = {}) => {
   if (!dumpCacheAvailable()) {
     return undefined
   }
 
-  const meta = readDumpCacheMeta(url)
+  const meta = readDumpCacheMeta()
 
-  if (!meta || Date.now() - meta.cachedAt > ttlMs) {
+  if (!meta || (!options.ignoreTtl && Date.now() - meta.cachedAt > ttlMs)) {
     await deleteCachedDump(url)
     return undefined
   }
@@ -155,7 +174,7 @@ const writeCachedDump = async (url: string, text: string, size?: number) => {
         },
       }),
     )
-    writeDumpCacheMeta(url, {
+    writeDumpCacheMeta({
       cachedAt: Date.now(),
       size: size ?? textEncoder.encode(text).byteLength,
     })
@@ -180,6 +199,28 @@ const loadMetadataSize = async (url: string) => {
   } catch {
     return undefined
   }
+}
+
+const loadDumpIndexTimestamp = async () => {
+  try {
+    const response = await fetch(cacheBustedUrl(defaultDumpIndexTimestampUrl), {
+      cache: 'no-store',
+    })
+
+    if (!response.ok) {
+      return undefined
+    }
+
+    const value = Number((await response.text()).trim())
+
+    return Number.isFinite(value) && value > 0 ? value : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const parseCachedDump = (cachedDump: { meta: DumpCacheMeta; text: string }) => {
+  return normalizeDump(JSON.parse(cachedDump.text) as DumpFile)
 }
 
 const contentLength = (response: Response, fallbackTotal?: number) => {
@@ -262,7 +303,32 @@ export const loadDump = async (
     phase: 'metadata',
   })
 
-  if (options.forceRefresh) {
+  const existingIndexTimestamp = readDumpIndexTimestamp()
+  const fetchedIndexTimestamp = await loadDumpIndexTimestamp()
+  const indexUnchanged =
+    existingIndexTimestamp !== undefined &&
+    fetchedIndexTimestamp !== undefined &&
+    fetchedIndexTimestamp <= existingIndexTimestamp
+  const indexUpdated =
+    fetchedIndexTimestamp !== undefined &&
+    (existingIndexTimestamp === undefined || fetchedIndexTimestamp > existingIndexTimestamp)
+
+  if (indexUnchanged) {
+    const cachedDump = await readCachedDump(url, ttlMs, { ignoreTtl: true })
+
+    if (cachedDump) {
+      touchDumpCacheMeta()
+      onProgress?.({
+        loaded: cachedDump.meta.size ?? cachedDump.text.length,
+        phase: 'parsing',
+        total: cachedDump.meta.size ?? cachedDump.text.length,
+      })
+
+      return parseCachedDump(cachedDump)
+    }
+  }
+
+  if (options.forceRefresh || indexUpdated) {
     await deleteCachedDump(url)
   } else {
     const cachedDump = await readCachedDump(url, ttlMs)
@@ -274,7 +340,7 @@ export const loadDump = async (
         total: cachedDump.meta.size ?? cachedDump.text.length,
       })
 
-      return normalizeDump(JSON.parse(cachedDump.text) as DumpFile)
+      return parseCachedDump(cachedDump)
     }
   }
 
@@ -298,7 +364,7 @@ export const loadDump = async (
   const dump = JSON.parse(text) as DumpFile
 
   await writeCachedDump(url, text, expectedTotal)
-  writeDumpNetworkFetchTimestamp(url)
+  writeDumpIndexTimestamp(fetchedIndexTimestamp)
 
   onProgress?.({
     loaded: expectedTotal ?? text.length,

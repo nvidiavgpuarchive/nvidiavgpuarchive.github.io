@@ -72,7 +72,7 @@ export const fr = {
     allFields: 'Tous les champs',
     clearFilters: 'Effacer les filtres',
     global: 'Global',
-    search: 'Rechercher',
+    search: 'Rechercher (la virgule signifie ET)',
     searchBy: 'Filtrer par {{field}}',
     valueCount: '{{count}} valeur(s)',
   },

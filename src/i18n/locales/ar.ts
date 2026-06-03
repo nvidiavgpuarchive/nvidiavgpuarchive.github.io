@@ -72,7 +72,7 @@ export const ar = {
     allFields: 'جميع الحقول',
     clearFilters: 'مسح المرشحات',
     global: 'عام',
-    search: 'بحث',
+    search: 'بحث (الفاصلة تعني AND)',
     searchBy: 'تصفية حسب {{field}}',
     valueCount: '{{count}} قيمة/قيم',
   },

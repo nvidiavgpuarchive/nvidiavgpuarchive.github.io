@@ -72,7 +72,7 @@ export const en = {
     allFields: 'All fields',
     clearFilters: 'Clear filters',
     global: 'Global',
-    search: 'Search',
+    search: 'Search (comma means AND)',
     searchBy: 'Filter by {{field}}',
     valueCount: '{{count}} value(s)',
   },

@@ -72,7 +72,7 @@ export const ja = {
     allFields: 'すべての項目',
     clearFilters: 'フィルターをクリア',
     global: 'グローバル',
-    search: '検索',
+    search: '検索（カンマはAND）',
     searchBy: '{{field}}で絞り込み',
     valueCount: '{{count}} 件',
   },

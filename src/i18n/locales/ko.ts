@@ -72,7 +72,7 @@ export const ko = {
     allFields: '모든 필드',
     clearFilters: '필터 지우기',
     global: '전체',
-    search: '검색',
+    search: '검색 (쉼표는 AND)',
     searchBy: '{{field}}로 필터링',
     valueCount: '{{count}}개 값',
   },

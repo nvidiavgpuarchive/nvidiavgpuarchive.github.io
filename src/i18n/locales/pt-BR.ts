@@ -72,7 +72,7 @@ export const ptBR = {
     allFields: 'Todos os campos',
     clearFilters: 'Limpar filtros',
     global: 'Global',
-    search: 'Pesquisar',
+    search: 'Pesquisar (vírgula significa AND)',
     searchBy: 'Filtrar por {{field}}',
     valueCount: '{{count}} valor(es)',
   },

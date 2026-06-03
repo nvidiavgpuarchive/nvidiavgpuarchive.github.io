@@ -72,7 +72,7 @@ export const zhHant = {
     allFields: '所有欄位',
     clearFilters: '清除篩選',
     global: '全域',
-    search: '搜尋',
+    search: '搜尋（逗號表示 AND）',
     searchBy: '依 {{field}} 篩選',
     valueCount: '{{count}} 個值',
   },

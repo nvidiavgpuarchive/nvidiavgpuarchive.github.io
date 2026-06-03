@@ -72,7 +72,7 @@ export const hi = {
     allFields: 'सभी फ़ील्ड',
     clearFilters: 'फ़िल्टर साफ़ करें',
     global: 'वैश्विक',
-    search: 'खोजें',
+    search: 'खोजें (कॉमा का मतलब AND है)',
     searchBy: '{{field}} के अनुसार फ़िल्टर करें',
     valueCount: '{{count}} मान',
   },

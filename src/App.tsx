@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   defaultDumpUrl,
   loadDump,
-  readDumpNetworkFetchTimestamp,
+  readDumpIndexTimestamp,
   shouldRefreshDumpForBuild,
   type LoadProgress,
 } from './data/load-dump'
@@ -15,7 +15,11 @@ const initialProgress: LoadProgress = {
   phase: 'requesting',
 }
 
-const readLastUpdatedAt = () => readDumpNetworkFetchTimestamp(defaultDumpUrl)
+const readLastUpdatedAt = () => {
+  const timestampSeconds = readDumpIndexTimestamp()
+
+  return timestampSeconds ? timestampSeconds * 1000 : undefined
+}
 
 function App() {
   const [rows, setRows] = useState<DownloadRow[]>([])
@@ -46,7 +50,7 @@ function App() {
 
     const loadInitialDump = async () => {
       try {
-        const forceRefresh = shouldRefreshDumpForBuild(defaultDumpUrl, __APP_BUILD_TIMESTAMP__)
+        const forceRefresh = shouldRefreshDumpForBuild(__APP_BUILD_TIMESTAMP__)
         const initialRows = await loadDump(defaultDumpUrl, (nextProgress) => {
           if (active) {
             setProgress(nextProgress)

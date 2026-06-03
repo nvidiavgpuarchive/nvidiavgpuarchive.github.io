@@ -72,7 +72,7 @@ export const zhHans = {
     allFields: '全部字段',
     clearFilters: '清除筛选',
     global: '全局',
-    search: '搜索',
+    search: '搜索（逗号表示 AND）',
     searchBy: '按{{field}}筛选',
     valueCount: '{{count}} 个值',
   },
