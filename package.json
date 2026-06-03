@@ -10,7 +10,14 @@
     "lint": "eslint .",
     "lint:scss": "stylelint \"src/**/*.scss\"",
     "lint:all": "npm run lint && npm run lint:scss",
+    "format": "prettier --write --ignore-unknown .",
+    "format:check": "prettier --check --ignore-unknown .",
+    "precommit": "lint-staged && npm run lint:all",
+    "prepare": "husky",
     "preview": "vite preview"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,scss,md,html,yml,yaml}": "prettier --write"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
@@ -32,6 +39,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
     "sass": "^1.100.0",
     "sitemap": "^9.0.1",
     "stylelint": "^17.12.0",

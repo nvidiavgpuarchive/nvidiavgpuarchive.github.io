@@ -1,17 +1,10 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Download,
-  GitPullRequest,
-  Languages,
-  RefreshCw,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
-import { ColumnVisibilityMenu } from "../ui/column-visibility-menu";
-import { FiltersPanel } from "../ui/filters-panel";
-import { Tooltip } from "../ui/tooltip";
-import { defaultLocale, locales, type Locale } from "../i18n/resources";
+import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Download, GitPullRequest, Languages, RefreshCw, SlidersHorizontal, X } from 'lucide-react'
+import { ColumnVisibilityMenu } from '../ui/column-visibility-menu'
+import { FiltersPanel } from '../ui/filters-panel'
+import { Tooltip } from '../ui/tooltip'
+import { defaultLocale, locales, type Locale } from '../i18n/resources'
 import {
   type FilterChip,
   type FilterKey,
@@ -20,42 +13,42 @@ import {
   type TextFilter,
   filterConfigs,
   textFilterConfigs,
-} from "./filters";
-import type { GridColumnOption } from "./grid-columns";
+} from './filters'
+import type { GridColumnOption } from './grid-columns'
 
 type DownloadsToolbarProps = {
-  activeFilterChips: FilterChip[];
-  activeFilterKey: FilterKey | null;
-  columnMenuOpen: boolean;
-  columnOptions: GridColumnOption[];
-  filterMenuOpen: boolean;
-  filters: MultiFiltersState;
-  filterOptions: Record<FilterKey, string[]>;
-  globalSearch: string;
-  hasClearableSearch: boolean;
-  loading: boolean;
-  searchControlRef: RefObject<HTMLFormElement | null>;
-  searchInput: string;
-  searchScope: SearchScopeKey;
-  searchScopeLabel: string;
-  textFilters: TextFilter[];
-  visibleColumns: Record<string, boolean>;
-  onClearAll: () => void;
-  onClearFilterKey: (key: FilterKey) => void;
-  onClearGlobalSearch: () => void;
-  onClearTextFilter: (key: TextFilter["key"]) => void;
-  onColumnMenuClose: () => void;
-  onColumnMenuToggle: () => void;
-  onColumnVisibilityChange: (field: string, visible: boolean) => void;
-  onCommitSearch: () => void;
-  onExport: () => void;
-  onFilterChange: (filters: MultiFiltersState) => void;
-  onFilterMenuToggle: () => void;
-  onReload: () => void;
-  onSearchInputChange: (value: string) => void;
-  onSearchScopeSelect: (key: SearchScopeKey) => void;
-  onSetActiveFilterKey: (key: FilterKey | null) => void;
-};
+  activeFilterChips: FilterChip[]
+  activeFilterKey: FilterKey | null
+  columnMenuOpen: boolean
+  columnOptions: GridColumnOption[]
+  filterMenuOpen: boolean
+  filters: MultiFiltersState
+  filterOptions: Record<FilterKey, string[]>
+  globalSearch: string
+  hasClearableSearch: boolean
+  loading: boolean
+  searchControlRef: RefObject<HTMLFormElement | null>
+  searchInput: string
+  searchScope: SearchScopeKey
+  searchScopeLabel: string
+  textFilters: TextFilter[]
+  visibleColumns: Record<string, boolean>
+  onClearAll: () => void
+  onClearFilterKey: (key: FilterKey) => void
+  onClearGlobalSearch: () => void
+  onClearTextFilter: (key: TextFilter['key']) => void
+  onColumnMenuClose: () => void
+  onColumnMenuToggle: () => void
+  onColumnVisibilityChange: (field: string, visible: boolean) => void
+  onCommitSearch: () => void
+  onExport: () => void
+  onFilterChange: (filters: MultiFiltersState) => void
+  onFilterMenuToggle: () => void
+  onReload: () => void
+  onSearchInputChange: (value: string) => void
+  onSearchScopeSelect: (key: SearchScopeKey) => void
+  onSetActiveFilterKey: (key: FilterKey | null) => void
+}
 
 export function DownloadsToolbar({
   activeFilterChips,
@@ -90,67 +83,67 @@ export function DownloadsToolbar({
   onSearchScopeSelect,
   onSetActiveFilterKey,
 }: DownloadsToolbarProps) {
-  const { i18n, t } = useTranslation();
-  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
-  const languageMenuRef = useRef<HTMLDivElement>(null);
+  const { i18n, t } = useTranslation()
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
+  const languageMenuRef = useRef<HTMLDivElement>(null)
   const filterLabel = (key: FilterKey) =>
-    t(filterConfigs.find((config) => config.key === key)?.labelKey ?? "");
-  const textFilterLabel = (key: TextFilter["key"]) =>
-    t(textFilterConfigs.find((config) => config.key === key)?.labelKey ?? "");
-  const activeLocale = locales.includes(i18n.language as Locale)
-    ? (i18n.language as Locale)
-    : "en";
+    t(filterConfigs.find((config) => config.key === key)?.labelKey ?? '')
+  const textFilterLabel = (key: TextFilter['key']) =>
+    t(textFilterConfigs.find((config) => config.key === key)?.labelKey ?? '')
+  const activeLocale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : 'en'
   const changeLanguage = (locale: Locale) => {
+    const baseUrl = `${window.location.pathname}${window.location.search}`
+
     if (locale === defaultLocale) {
-      window.history.pushState(null, "", `${window.location.pathname}${window.location.search}`);
+      window.history.pushState(null, '', baseUrl)
     } else {
-      window.location.hash = locale;
+      window.history.pushState(null, '', `${baseUrl}#${locale}`)
     }
 
-    void i18n.changeLanguage(locale);
-    setLanguageMenuOpen(false);
-  };
+    void i18n.changeLanguage(locale)
+    setLanguageMenuOpen(false)
+  }
 
   useEffect(() => {
     if (!languageMenuOpen) {
-      return;
+      return
     }
 
     const handlePointerDown = (event: PointerEvent) => {
-      const root = languageMenuRef.current;
+      const root = languageMenuRef.current
 
       if (!root || root.contains(event.target as Node)) {
-        return;
+        return
       }
 
-      setLanguageMenuOpen(false);
-    };
+      setLanguageMenuOpen(false)
+    }
 
-    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener('pointerdown', handlePointerDown)
 
     return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [languageMenuOpen]);
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [languageMenuOpen])
 
   return (
     <section aria-label="Toolbar" className="table-toolbar">
       <form
         className={[
-          "search-control",
-          filterMenuOpen || hasClearableSearch || searchScope !== "global"
-            ? "search-control--active"
-            : "",
+          'search-control',
+          filterMenuOpen || hasClearableSearch || searchScope !== 'global'
+            ? 'search-control--active'
+            : '',
         ]
           .filter(Boolean)
-          .join(" ")}
+          .join(' ')}
         ref={searchControlRef}
         onSubmit={(event) => {
-          event.preventDefault();
-          onCommitSearch();
+          event.preventDefault()
+          onCommitSearch()
         }}
       >
-        <Tooltip content={t("actions.openFilters")}>
+        <Tooltip content={t('actions.openFilters')}>
           {(tooltipProps) => (
             <button
               {...tooltipProps}
@@ -186,8 +179,8 @@ export function DownloadsToolbar({
             type="button"
           >
             <span>
-              {filterLabel(chip.key)}:{" "}
-              {chip.selectedValue || t("filters.valueCount", { count: chip.selectedCount })}
+              {filterLabel(chip.key)}:{' '}
+              {chip.selectedValue || t('filters.valueCount', { count: chip.selectedCount })}
             </span>
             <X aria-hidden="true" size={16} />
           </button>
@@ -199,7 +192,9 @@ export function DownloadsToolbar({
             onClick={onClearGlobalSearch}
             type="button"
           >
-            <span>{t("filters.global")}: {globalSearch}</span>
+            <span>
+              {t('filters.global')}: {globalSearch}
+            </span>
             <X aria-hidden="true" size={16} />
           </button>
         ) : null}
@@ -222,16 +217,16 @@ export function DownloadsToolbar({
           className="search-control__input"
           onChange={(event) => onSearchInputChange(event.target.value)}
           placeholder={
-            searchScope === "global"
-              ? t("filters.search")
-              : t("filters.searchBy", { field: searchScopeLabel })
+            searchScope === 'global'
+              ? t('filters.search')
+              : t('filters.searchBy', { field: searchScopeLabel })
           }
           type="search"
           value={searchInput}
         />
 
         {hasClearableSearch ? (
-          <Tooltip content={t("filters.clearFilters")}>
+          <Tooltip content={t('filters.clearFilters')}>
             {(tooltipProps) => (
               <button
                 {...tooltipProps}
@@ -247,7 +242,7 @@ export function DownloadsToolbar({
       </form>
 
       <div className="toolbar-actions">
-        <Tooltip content={t("actions.refreshData")}>
+        <Tooltip content={t('actions.refreshData')}>
           {(tooltipProps) => (
             <button
               {...tooltipProps}
@@ -257,21 +252,16 @@ export function DownloadsToolbar({
               type="button"
             >
               <RefreshCw aria-hidden="true" size={16} />
-              <span>{t("actions.reload")}</span>
+              <span>{t('actions.reload')}</span>
             </button>
           )}
         </Tooltip>
 
-        <Tooltip content={t("actions.exportCsv")}>
+        <Tooltip content={t('actions.exportCsv')}>
           {(tooltipProps) => (
-            <button
-              {...tooltipProps}
-              className="icon-button"
-              onClick={onExport}
-              type="button"
-            >
+            <button {...tooltipProps} className="icon-button" onClick={onExport} type="button">
               <Download aria-hidden="true" size={16} />
-              <span>{t("actions.exportCsv")}</span>
+              <span>{t('actions.exportCsv')}</span>
             </button>
           )}
         </Tooltip>
@@ -286,7 +276,7 @@ export function DownloadsToolbar({
         />
 
         <div className="toolbar-language" ref={languageMenuRef}>
-          <Tooltip content={t("actions.language")}>
+          <Tooltip content={t('actions.language')}>
             {(tooltipProps) => (
               <button
                 {...tooltipProps}
@@ -304,7 +294,7 @@ export function DownloadsToolbar({
             <div className="toolbar-language__menu" role="menu">
               {locales.map((locale) => (
                 <button
-                  aria-current={locale === activeLocale ? "true" : undefined}
+                  aria-current={locale === activeLocale ? 'true' : undefined}
                   className="toolbar-language__item"
                   key={locale}
                   onClick={() => changeLanguage(locale)}
@@ -317,7 +307,7 @@ export function DownloadsToolbar({
           ) : null}
         </div>
 
-        <Tooltip content={t("actions.openGithubRepo")}>
+        <Tooltip content={t('actions.openGithubRepo')}>
           {(tooltipProps) => (
             <a
               {...tooltipProps}
@@ -327,11 +317,11 @@ export function DownloadsToolbar({
               target="_blank"
             >
               <GitPullRequest aria-hidden="true" size={16} />
-              <span>{t("actions.github")}</span>
+              <span>{t('actions.github')}</span>
             </a>
           )}
         </Tooltip>
       </div>
     </section>
-  );
+  )
 }
